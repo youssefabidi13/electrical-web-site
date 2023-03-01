@@ -2,9 +2,9 @@
 require_once "../config.php";
 // Initialize the session
 session_start();
- 
+
 // Check if the user is logged in, if not then redirect him to login page
-if(!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] !== true){
+if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] !== true) {
     header("location: ../login.php");
     exit;
 }
@@ -19,6 +19,7 @@ if(!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] 
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap">
     <link rel="stylesheet" href="../assets/fonts/font-awesome.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.js"></script>
     <link rel="stylesheet" href="../assets/css/Button-Outlines---Pretty.css">
     <link rel="stylesheet" href="../assets/css/Dynamic-Table.css">
     <link rel="stylesheet" href="../assets/css/Fully-responsive-table.css">
@@ -29,30 +30,33 @@ if(!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] 
     <link rel="stylesheet" href="../assets/css/Table-With-Search.css">
 </head>
 
-<body><nav id="mainNav" class="navbar navbar-light navbar-expand-md fixed-top navbar-shrink py-3">
-    <div class="container"><a class="navbar-brand d-flex align-items-center" href="../index.php"><span>ELECTRICAL WEB SITE</span></a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
-        <div id="navcol-1" class="collapse navbar-collapse" style="padding-left: 0px;">
-            <ul class="navbar-nav mx-auto">
-                <li class="nav-item"><a class="nav-link" href="dashboard_fournisseur.php">Dashboard</a></li>
-                <li class="nav-item"></li>
-                <li class="nav-item"><a class="nav-link" href="verify.php">Annuelles</a></li>
-                <li class="nav-item"></li>
-                <li class="nav-item"><a class="nav-link active" href="verifyMonth.php">Mensuelles</a></li>
-                <li class="nav-item"></li>
-                <li class="nav-item"><a class="nav-link" href="showReclamation.php">Reclamation</a></li>
-            </ul><a class="btn btn-primary" href="../logout.php">logout</a>
+<body>
+    <nav id="mainNav" class="navbar navbar-light navbar-expand-md fixed-top navbar-shrink py-3">
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="../index.php"><span>ELECTRICAL WEB SITE</span></a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div id="navcol-1" class="collapse navbar-collapse" style="padding-left: 0px;">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="dashboard_fournisseur.php">Dashboard</a></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"><a class="nav-link" href="verify.php">Annuelles</a></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"><a class="nav-link active" href="verifyMonth.php">Mensuelles</a></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"><a class="nav-link" href="showReclamation.php">Reclamation</a></li>
+                </ul><a class="btn btn-primary" href="../logout.php">logout</a>
+            </div>
         </div>
-    </div>
-</nav><section class="py-5 mt-5"><div class="container py-5">
-    <div class="row mb-5">
-        <div class="col-md-8 col-xl-6 text-center mx-auto">
-            <h2 class="fw-bold"><br /><span class="underline pb-2">Verification monsuelle </span></h2>
-        </div>
-    </div>
-    <div class="col-md-12 search-table-col">
-        <div class="table-responsive table table-hover table-bordered results">
+    </nav>
+    <section class="py-5 mt-5">
+        <div class="container py-5">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2 class="fw-bold"><br /><span class="underline pb-2">Verification monsuelle </span></h2>
+                </div>
+            </div>
+            <div class="col-md-12 search-table-col">
+                <div class="table-responsive table table-hover table-bordered results">
                     <?php
-                    
+
                     // Execute the SQL query
                     $sql = 'SELECT *
                     FROM facture  where prix_HT is  null and prix_TTC is  null';
@@ -60,8 +64,10 @@ if(!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] 
                     if (!$result) {
                         die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));
                     }
-                    echo "<table class='table table-hover table-bordered' id='client_data'>";
-                    echo "<thead class='bill-header cs'>
+                    if ($result->num_rows > 0) {
+
+                        echo "<table class='table table-hover table-bordered' id='client_data'>";
+                        echo "<thead class='bill-header cs'>
                                 <tr>
                                 <th id='trs-hd-1' class='col-lg-1' style='color:black'>Id</th>
                                 <th id='trs-hd-1' class='col-lg-3' style='color:black'>Id client</th>
@@ -73,30 +79,34 @@ if(!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] 
     
                                 </tr>
                             </thead>";
-                    echo "<tbody>";
+                        echo "<tbody>";
 
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<tr>";
-                        echo "<td>" . $row['id'] . "</td>";
-                        echo "<td>" . $row['client_id'] . "</td>";
-                        echo "<td>" . $row['mois'] . "</td>";
-                        echo "<td>" . $row['consommation_monsuelle'] . "</td>";
-                        echo '<td><img src="../Client/'. $row['photo_path'].'" width="50" height="50"></img></td>';
-                        echo "<td>" . $row['status_f'] . "</td>";
-                        echo '<form action="traitement.php" method="get">';
-                        echo '<td><a class="btn btn-primary" type="button" name="submitApp" href="traitement.php?id=' . $row['client_id'] . '&mois='.$row['mois'].'">Approuver la facture</a></td>';
-                        echo'</form>';                        
-                        echo "</tr>";
-                        echo '<br>';
-
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>";
+                            echo "<td>" . $row['id'] . "</td>";
+                            echo "<td>" . $row['client_id'] . "</td>";
+                            echo "<td>" . $row['mois'] . "</td>";
+                            echo "<td>" . $row['consommation_monsuelle'] . "</td>";
+                            echo '<td><img src="../Client/' . $row['photo_path'] . '" width="50" height="50"></img></td>';
+                            echo "<td>" . $row['status_f'] . "</td>";
+                            echo '<form action="traitement.php" method="get">';
+                            echo '<td><a class="btn btn-primary" type="button" name="submitApp" href="traitement.php?id=' . $row['client_id'] . '&mois=' . $row['mois'] . '">Approuver la facture</a></td>';
+                            echo '</form>';
+                            echo "</tr>";
+                            echo '<br>';
+                        }
+                        echo "</tbody>";
+                        echo "</table>";
+                    } else {
+                        echo '<div class="alert alert-success" role="alert">
+A l\'instant il n\' y a pas de consommations à valider .
+</div>';
                     }
-                    echo "</tbody>";
-                    echo "</table>";
-
                     ?>
                 </div>
-    </div>
-</div></section>
+            </div>
+        </div>
+    </section>
     <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.6.0/umd/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
@@ -112,6 +122,21 @@ if(!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] 
     <script src="../assets/js/Dynamic-Table-dynamic-table.js"></script>
     <script src="../assets/js/startup-modern.js"></script>
     <script src="../assets/js/Table-With-Search-search-table.js"></script>
+    <?php
+    if (isset($_SESSION['add']) && $_SESSION['add'] == true) {
+        echo "<script>
+        Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Votre consommation a été enregistré',
+                showConfirmButton: false,
+                timer: 1500
+              })
+            </script>";
+        $_SESSION['add'] = false;
+    }
+    ?>
+
 </body>
 
 </html>

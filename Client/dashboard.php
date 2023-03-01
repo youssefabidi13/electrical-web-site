@@ -48,7 +48,9 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                     <li class="nav-item"></li>
                     <li class="nav-item"><a class="nav-link" href="facture.php">Mes factures</a></li>
                     <li class="nav-item"></li>
-                    <li class="nav-item"><a class="nav-link" href="response.php">Response</a></li>
+                    <li class="nav-item"><a class="nav-link" href="reclamation.php">Ajouter une reclamation</a></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"><a class="nav-link" href="response.php">Reponse</a></li>
                     <li class="nav-item"></li>
                 </ul><a class="btn btn-primary" href="../logout.php">logout</a>
             </div>
@@ -115,10 +117,7 @@ Vous avez payé tous les factures
             </div>
         </div><!-- End: Testimonials -->
     </section>
-    <div class="btn-toolbar">
-        <div class="btn-group" role="group"></div>
-        <div class="btn-group" role="group"></div>
-    </div><!-- Start: Footer Multi Column -->
+    
     <footer>
         <div class="container py-4 py-lg-5">
             <hr>
@@ -157,7 +156,42 @@ Vous avez payé tous les factures
  $(document).ready(function(){  
       $('#client_data').DataTable();  
  });  
- </script> 
+ </script>
+ <?php
+    
+    if (isset($_SESSION['add']) && $_SESSION['add'] == true) {
+       echo "<script>
+       Swal.fire({
+               position: 'top-end',
+               icon: 'success',
+               title: 'Votre reclamation a été envoyée',
+               showConfirmButton: false,
+               timer: 1500
+             })
+           </script>";
+       $_SESSION['add'] = false;
+   } else if (isset($_SESSION['notAdd']) && $_SESSION['notAdd'] == true) {
+       echo "<script>
+           Swal.fire({
+               icon: 'error',
+               title: 'Oops...',
+               text: 'Votre reclamation n'a pas été envoyée, Veuillez ressayer ulterieurement !',
+             })
+           </script>";
+       $_SESSION['notAdd'] = false;
+   } if (isset($_SESSION['delete']) && $_SESSION['delete'] == true) {
+    echo "<script>
+    Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: 'Votre reclamation a été envoyée',
+            showConfirmButton: false,
+            timer: 1500
+          })
+        </script>";
+    $_SESSION['delete'] = false;
+}
+   ?> 
 </body>
 
 </html>

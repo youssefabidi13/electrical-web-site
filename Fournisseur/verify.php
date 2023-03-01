@@ -2,9 +2,9 @@
 require_once "../config.php";
 // Initialize the session
 session_start();
- 
+
 // Check if the user is logged in, if not then redirect him to login page
-if(!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] !== true){
+if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] !== true) {
     header("location: ../login.php");
     exit;
 }
@@ -16,7 +16,13 @@ if(!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Verification Annuelle</title>
+    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap">
     <link rel="stylesheet" href="../assets/fonts/font-awesome.min.css">
     <link rel="stylesheet" href="../assets/css/Button-Outlines---Pretty.css">
@@ -29,68 +35,104 @@ if(!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] 
     <link rel="stylesheet" href="../assets/css/Table-With-Search.css">
 </head>
 
-<body><nav id="mainNav" class="navbar navbar-light navbar-expand-md fixed-top navbar-shrink py-3">
-    <div class="container"><a class="navbar-brand d-flex align-items-center" href="../index.php"><span>ELECTRICAL WEB SITE</span></a>
-    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-1">
-        <span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
-        <div id="navcol-1" class="collapse navbar-collapse" style="padding-left: 0px;">
-            <ul class="navbar-nav mx-auto">
-                <li class="nav-item"><a class="nav-link" href="dashboard_fournisseur.php">Dashboard</a></li>
-                <li class="nav-item"></li>
-                <li class="nav-item"><a class="nav-link active" href="verify.php">Annuelles</a></li>
-                <li class="nav-item"></li>
-                <li class="nav-item"><a class="nav-link" href="verifyMonth.php">Mensuelles</a></li>
-                <li class="nav-item"></li>
-                <li class="nav-item"><a class="nav-link" href="showReclamation.php">Reclamation</a></li>
-            </ul><a class="btn btn-primary" href="../logout.php">logout</a>
+<body>
+    <nav id="mainNav" class="navbar navbar-light navbar-expand-md fixed-top navbar-shrink py-3">
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="../index.php"><span>ELECTRICAL WEB SITE</span></a>
+            <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-1">
+                <span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div id="navcol-1" class="collapse navbar-collapse" style="padding-left: 0px;">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="dashboard_fournisseur.php">Dashboard</a></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"><a class="nav-link active" href="verify.php">Annuelles</a></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"><a class="nav-link" href="verifyMonth.php">Mensuelles</a></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"><a class="nav-link" href="showReclamation.php">Reclamation</a></li>
+                </ul><a class="btn btn-primary" href="../logout.php">logout</a>
+            </div>
         </div>
-    </div>
-</nav><section class="py-5 mt-5"><div class="container py-5"><div class="row mb-5"><div class="col-md-8 col-xl-6 text-center mx-auto"><h2 class="fw-bold"><br><span class="underline pb-2">Consomations annuelles&nbsp;</span></h2></div></div><!-- Start: Table With Search --><div class="col-md-12 search-table-col">
-    <div class="form-group pull-right col-lg-4"><input class="search form-control" type="text" placeholder="Search by typing here.." /></div><span class="counter pull-right"></span>
-    <div class="table-responsive table table-hover table-bordered results">
-        <table class="table table-hover table-bordered">
-            <thead class="bill-header cs">
-                <tr>
-                    <th id="trs-hd-1" class="col-lg-1">Id client</th>
-                    <th id="trs-hd-2" class="col-lg-2">Consomation ann par agent</th>
-                    <th id="trs-hd-3" class="col-lg-3">Consomation ann par client</th>
-                    <th id="trs-hd-4" class="col-lg-2">status</th>
-                    <th id="trs-hd-5" class="col-lg-2">Decalage</th>
-                    <th id="trs-hd-6" class="col-lg-2">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="warning no-result">
-                    <td colspan="12"><i class="fa fa-warning"></i>  No Result !!!</td>
-                </tr>
-                <tr>
-                    <td>01</td>
-                    <td>500</td>
-                    <td>200</td>
-                    <td>superieur</td>
-                    <td> +300</td><!--prix du mois 12 + decalage-->
-                    <td><button class="btn btn-primary" style="margin-left: 0px;" type="submit">Generer facture</button></td>
-                </tr>
-                <tr>
-                    <td>02</td>
-                    <td>500</td>
-                    <td>500</td>
-                    <td>egale</td>
-                    <td>000</td>
-                    <td><button class="btn btn-primary" style="margin-left: 0px;" type="submit">Generer facture</button></td>
-                </tr>
-                <tr>
-                    <td>03</td>
-                    <td>500</td>
-                    <td>600</td>
-                    <td>inferieur</td>
-                    <td>-100</td>
-                    <td><button class="btn btn-primary" style="margin-left: 0px;" type="submit">Generer facture</button></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div><!-- End: Table With Search --></div></section>
+    </nav>
+    <section class="py-5 mt-5">
+        <div class="container py-5">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2 class="fw-bold"><br><span class="underline pb-2">Consomations annuelles&nbsp;</span></h2>
+                </div>
+            </div><!-- Start: Table With Search -->
+            <div class="col-md-12 search-table-col">
+                <div class="col-md-12 search-table-col">
+
+                    <div class="table-responsive table table-hover table-bordered results">
+                        <?php
+                        $status = false;
+                        // Execute the SQL query
+                        $sql = "SELECT a.id,a.client_id , a.consommation, f.consommation_monsuelle,(a.consommation-f.consommation_monsuelle) as difference 
+                        FROM consommation_annuelle a , facture f
+                        WHERE f.client_id=a.client_id and f.mois = 12;" ;
+                        $result = mysqli_query($mysqli, $sql);
+                        if (!$result) {
+                            die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));
+                        }
+                        if ($result->num_rows > 0) {
+                            echo "<table class='table table-hover table-bordered' id='client_data'>";
+                            echo "<thead class='bill-header cs'>
+                        <tr>
+                        <th id='trs-hd-1' class='col-lg-2' style='color:black'>Id client</th>
+                        <th id='trs-hd-2' class='col-lg-4' style='color:black'>Consommation saisie par l'agent</th>
+                        <th id='trs-hd-2' class='col-lg-4' style='color:black'>Consommation saisie par le client</th>
+                        <th id='trs-hd-2' class='col-lg-3' style='color:black'>Status</th>
+                        <th id='trs-hd-2' class='col-lg-3' style='color:black'>Decalage</th>
+
+                        </tr>
+                    </thead>";
+                            echo "<tbody>";
+                            while ($row = $result->fetch_assoc()) {
+                                $id=$row['id'];
+                                echo "<tr>";
+                                echo "<td>" . $row['client_id'] . "</td>";
+                                echo "<td>" . $row['consommation'] . "</td>";
+                                echo "<td>" . $row['consommation_monsuelle'] . "</td>";
+                                $difference =$row['difference'];
+                                if ($row['difference'] == 0) {
+                                    $sql1 = "update consommation_annuelle set status = 'egale' and decalage='$difference' where id = '$id';";
+                                    $sql2 = "update consommation_annuelle set  decalage='$difference' where id = '$id';";
+
+                                    $result1 = mysqli_query($mysqli, $sql1);
+                                    $result2 = mysqli_query($mysqli, $sql2);
+
+                                    echo "<td>egale</td>";
+                                } else if($row['difference'] > 0){
+                                    $sql1 = "update consommation_annuelle set status = 'superieur'  where id = '$id';";
+                                    $sql2 = "update consommation_annuelle set  decalage='$difference' where id = '$id';";
+                                    $result1 = mysqli_query($mysqli, $sql1);
+                                    $result2 = mysqli_query($mysqli, $sql2);
+
+                                    echo "<td>superieur</td>";
+                                }else{
+                                    $sql1 = "update consommation_annuelle set status = 'inferieur' where id = '$id';";
+                                    $sql2 = "update consommation_annuelle set  decalage='$difference' where id = '$id';";
+                                    $result1 = mysqli_query($mysqli, $sql1);
+                                    $result2 = mysqli_query($mysqli, $sql2);
+
+                                    echo "<td>inferieur</td>";
+                                }
+                                echo "<td>" . $row['difference'] . "</td>";
+                                echo "</tr>";
+                            }
+
+                            echo "</tbody>";
+                            echo "</table>";
+                        } else {
+                            echo '<div class="alert alert-success" role="alert">
+Nous sommes pas encore arrivés à la fin d\'année.
+</div>';
+                        }
+                        ?>
+                    </div>
+                </div>
+            </div>
+    </section>
     <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.6.0/umd/popper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
@@ -106,6 +148,11 @@ if(!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] 
     <script src="../assets/js/Dynamic-Table-dynamic-table.js"></script>
     <script src="../assets/js/startup-modern.js"></script>
     <script src="../assets/js/Table-With-Search-search-table.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#client_data').DataTable();
+        });
+    </script>
 </body>
 
 </html>

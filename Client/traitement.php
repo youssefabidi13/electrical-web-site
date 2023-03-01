@@ -31,17 +31,27 @@ if (isset($_POST['submitAdd'])) {
                 $fileDestination = 'uploads/' . $fileNameNew;
                 move_uploaded_file($fileTmpName, $fileDestination);
             } else {
-                echo "your file is too big !";
+                $_SESSION['big'] = true;
+                header("Location: facture.php");
+
+                //echo "your file is too big !";
             }
         } else {
-            echo "there was an error uploading your file !";
+            $_SESSION['error'] = true;
+            header("Location: facture.php");
+
+            //echo "there was an error uploading your file !";
         }
     } else {
-        echo "you cannot upload files of this type !";
+        $_SESSION['type'] = true;
+        header("Location: facture.php");
+
+        //echo "you cannot upload files of this type !";
     }
     $id = $_SESSION["id"];
     $mois = $_POST['mois'];
     $mois_pre = $mois - 1;
+    $annee = $_POST['annee'];
     $consommation = $_POST['consommation'];
 
     $sql = "SELECT * FROM facture WHERE mois='$mois'";
@@ -58,108 +68,180 @@ if (isset($_POST['submitAdd'])) {
                 if ($consommation_f <= 100) {
                     $HT = $consommation_f * 0.91;
                     $TTC = $HT + $HT * 0.14;
-                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC)
-                    VALUES ('$id','$consommation', '$mois', '$fileDestination', '$HT', '$TTC')";
+                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC,annee)
+                    VALUES ('$id','$consommation', '$mois', '$fileDestination', '$HT', '$TTC','$annee')";
                     $result = mysqli_query($mysqli, $sql);
                     if ($result) {
-                        echo "<script src='../assets/js/sweet.js'>Swal.fire({
-                            position: 'top-end',
-                            icon: 'success',
-                            title: 'Your facture has been added',
-                            showConfirmButton: false,
-                            timer: 1500
-                          })</script>";
+                        $_SESSION['add'] = true;
+                        header("Location: facture.php");
+                    } else {
+                        $_SESSION['notAdd'] = true;
                         header("Location: facture.php");
                     }
                 } else if ($consommation_f > 100 && $consommation_f <= 200) {
                     $HT = $consommation_f * 1.01;
                     $TTC = $HT + $HT * 0.14;
-                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC)
-                    VALUES ('$id','$consommation', '$mois', '$fileDestination', '$HT', '$TTC')";
+                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC,annee)
+                    VALUES ('$id','$consommation', '$mois', '$fileDestination', '$HT', '$TTC','$annee')";
                     $result = mysqli_query($mysqli, $sql);
                     if ($result) {
+                        $_SESSION['add'] = true;
                         header("Location: facture.php");
                     } else {
+                        $_SESSION['notAdd'] = true;
+                        header("Location: facture.php");
                     }
                 } else if ($consommation_f > 200) {
                     $HT = $consommation_f * 1.12;
                     $TTC = $HT + $HT * 0.14;
-                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC)
-                    VALUES ('$id','$consommation', '$mois', '$fileDestination', '$HT', '$TTC')";
+                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC,annee)
+                    VALUES ('$id','$consommation', '$mois', '$fileDestination', '$HT', '$TTC','$annee')";
                     $result = mysqli_query($mysqli, $sql);
                     if ($result) {
+                        $_SESSION['add'] = true;
+                        header("Location: facture.php");
+                    } else {
+                        $_SESSION['notAdd'] = true;
                         header("Location: facture.php");
                     }
                 } else {
-                    echo "<script>setTimeout(function() {alert('Veuillez ressayer ulterieurement'); }, 3000);</script>";
+                    $_SESSION['notAdd'] = true;
+                    header("Location: facture.php");
                 }
             } else {
-                $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path)
-                    VALUES ('$id','$consommation', '$mois', '$fileDestination')";
+                $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path,annee)
+                    VALUES ('$id','$consommation', '$mois', '$fileDestination','$annee')";
                 $result = mysqli_query($mysqli, $sql);
+
                 if ($result) {
+                    $_SESSION['addIf'] = true;
+                    header("Location: facture.php");
+                } else {
+                    $_SESSION['notAdd'] = true;
                     header("Location: facture.php");
                 }
             }
         } else {
-            // $sql = "SELECT * FROM facture WHERE mois='$mois'";
-            // $result = mysqli_query($mysqli, $sql);
-            // $user = mysqli_fetch_assoc($result);
-            // $consommation_f = $consommation - $user['consommation'];
-            if ($consommation >= 50 && $consommation <= 400) {
-                if ($consommation <= 100) {
-                    $HT = $consommation * 0.91;
+            $ann = $annee - 1;
+            $sql3 = "SELECT annee FROM consommation_annuelle WHERE client_id='$id'";
+            $result3 = mysqli_query($mysqli, $sql3);
+            $user3 = mysqli_fetch_assoc($result3);
+            if ($user3['annee'] == null) {
+                $dec = 0;
+            } else {
+                $sql1 = "SELECT * FROM consommation_annuelle WHERE client_id='$id' and annee='$ann'";
+                $result1 = mysqli_query($mysqli, $sql1);
+                $user1 = mysqli_fetch_assoc($result1);
+                $dec = $user1['decalage'];
+            }
+            $consommation_f = $consommation + $dec;
+            if ($consommation_f >= 50 && $consommation_f <= 400) {
+                if ($consommation_f <= 100) {
+                    $HT = $consommation_f * 0.91;
                     $TTC = $HT + $HT * 0.14;
-                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC)
-                    VALUES ('$id','$consommation', '$mois', '$fileDestination', '$HT', '$TTC')";
+                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC,annee)
+                    VALUES ('$id','$consommation_f', '$mois', '$fileDestination', '$HT', '$TTC','$annee')";
                     $result = mysqli_query($mysqli, $sql);
                     if ($result) {
-                        echo "<script src='../assets/js/sweet.js'>Swal.fire({
-                            position: 'top-end',
-                            icon: 'success',
-                            title: 'Your facture has been added',
-                            showConfirmButton: false,
-                            timer: 1500
-                          })</script>";
+                        $_SESSION['add'] = true;
+                        header("Location: facture.php");
+                    } else {
+                        $_SESSION['notAdd'] = true;
                         header("Location: facture.php");
                     }
-                } else if ($consommation > 100 && $consommation <= 200) {
-                    $HT = $consommation * 1.01;
+                } else if ($consommation_f > 100 && $consommation_f <= 200) {
+                    $HT = $consommation_f * 1.01;
                     $TTC = $HT + $HT * 0.14;
-                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC)
-                    VALUES ('$id','$consommation', '$mois', '$fileDestination', '$HT', '$TTC')";
+                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC,annee)
+                    VALUES ('$id','$consommation_f', '$mois', '$fileDestination', '$HT', '$TTC','$annee')";
                     $result = mysqli_query($mysqli, $sql);
                     if ($result) {
+                        $_SESSION['add'] = true;
+                        header("Location: facture.php");
+                    } else {
+                        $_SESSION['notAdd'] = true;
                         header("Location: facture.php");
                     }
-                } else if ($consommation > 200) {
-                    $HT = $consommation * 1.12;
+                } else if ($consommation_f > 200) {
+                    $HT = $consommation_f * 1.12;
                     $TTC = $HT + $HT * 0.14;
-                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC)
-                    VALUES ('$id','$consommation', '$mois', '$fileDestination', '$HT', '$TTC')";
+                    $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path, prix_HT,prix_TTC,annee)
+                    VALUES ('$id','$consommation_f', '$mois', '$fileDestination', '$HT', '$TTC','$annee')";
                     $result = mysqli_query($mysqli, $sql);
                     if ($result) {
+                        $_SESSION['add'] = true;
+                        header("Location: facture.php");
+                    } else {
+                        $_SESSION['notAdd'] = true;
                         header("Location: facture.php");
                     }
                 } else {
-                    echo "<script>setTimeout(function() {alert('Veuillez ressayer ulterieurement'); });</script>";
+                    $_SESSION['notAdd'] = true;
+                    header("Location: facture.php");
                 }
             } else {
-                $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path)
-                    VALUES ('$id','$consommation', '$mois', '$fileDestination')";
+                $sql = "INSERT INTO facture (client_id,consommation_monsuelle,mois,photo_path,annee)
+                    VALUES ('$id','$consommation_f', '$mois', '$fileDestination','$annee')";
                 $result = mysqli_query($mysqli, $sql);
                 if ($result) {
+                    $_SESSION['addIf'] = true;
                     header("Location: facture.php");
                 } else {
+                    $_SESSION['notAdd'] = true;
+                    header("Location: facture.php");
                 }
             }
         }
     } else {
-        
-    echo "<script>
-        alert('Le mois est déjà enregistré');
-        window.location.href = 'facture.php';
-        </script>";
 
+
+        header("Location: facture.php");
+        $_SESSION['moisDeja'] = true;
+    }
+}
+if (isset($_POST['submitRec'])) {
+    $subject  = $_POST['subject'];
+    $other_subject = $_POST['otherSubject'];
+    $message = $_POST['message'];
+    $id = $_SESSION["id"];
+    $sql = "SELECT agent.fournisseur_id
+        FROM agent
+        INNER JOIN client ON agent.id = client.agent_id
+        WHERE client.ID = $id;";
+    $result = mysqli_query($mysqli, $sql);
+    $row = mysqli_fetch_assoc($result);
+    $id_f = $row['fournisseur_id'];
+    if ($subject == 'Autre') {
+
+        $sql = "INSERT INTO reclamation (client_id,contenue,fournisseur_id,type_rec,autre_type)
+                    VALUES ('$id','$message', '$id_f', '$subject','$other_subject')";
+        $result = mysqli_query($mysqli, $sql);
+        if ($result) {
+            $_SESSION['add'] = true;
+            header("Location: dashboard.php");
+        } else {
+            $_SESSION['notAdd'] = true;
+            header("Location: dashboard.php");
+        }
+    } else {
+        $sql = "INSERT INTO reclamation (client_id,contenue,fournisseur_id,type_rec)
+                    VALUES ('$id','$message', '$id_f', '$subject')";
+        $result = mysqli_query($mysqli, $sql);
+        if ($result) {
+            $_SESSION['add'] = true;
+            header("Location: dashboard.php");
+        } else {
+            $_SESSION['notAdd'] = true;
+            header("Location: dashboard.php");
+        }
+    }
+}
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    $id = $_GET['id'];
+    $sql = "DELETE FROM reclamation WHERE id='$id'";
+    $result = mysqli_query($mysqli, $sql);
+    if ($result) {
+        $_SESSION['delete'] = true;
+        header("Location: response.php");
     }
 }

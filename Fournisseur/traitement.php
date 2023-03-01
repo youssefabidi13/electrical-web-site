@@ -9,84 +9,73 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
     header("location: ../login.php");
     exit;
 }
-if ($_SERVER['REQUEST_METHOD']=='GET') {
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $id = $_GET['id'];
     $mois = $_GET['mois'];
 
     $sql = "SELECT * FROM facture WHERE mois='$mois' and client_id ='$id'";
     $result = mysqli_query($mysqli, $sql);
-    $row=mysqli_fetch_assoc($result);
+    $row = mysqli_fetch_assoc($result);
     $mois_pre = $mois - 1;
 
     $consommation = $row['consommation_monsuelle'];
     echo $consommation;
 
-        if ($mois != 01) {
-            $sql = "SELECT * FROM facture WHERE mois='$mois_pre' and client_id ='$id';";
+    if ($mois != 01) {
+        $sql = "SELECT * FROM facture WHERE mois='$mois_pre' and client_id ='$id';";
+        $result = mysqli_query($mysqli, $sql);
+        $user = mysqli_fetch_assoc($result);
+        $consommation_f = $consommation - $user['consommation_monsuelle'];
+        if ($consommation < 50) {
+            $HT = $consommation_f * 0.91;
+            $TTC = $HT + $HT * 0.14;
+            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
+
             $result = mysqli_query($mysqli, $sql);
-            $user = mysqli_fetch_assoc($result);
-            $consommation_f = $consommation - $user['consommation_monsuelle'];
-                if ($consommation < 50) {
-                    $HT = $consommation_f * 0.91;
-                    $TTC = $HT + $HT * 0.14;
-                    $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
+            if ($result) {
 
-                    $result = mysqli_query($mysqli, $sql);
-                    if ($result) {
-                        echo "<script src='../assets/js/sweet.js'>Swal.fire({
-                            position: 'top-end',
-                            icon: 'success',
-                            title: 'Your facture has been added',
-                            showConfirmButton: false,
-                            timer: 1500
-                          })</script>";
-                        header("Location: verifyMonth.php");
-                    }
-                } else if ($consommation > 400) {
-                    $HT = $consommation_f * 1.12;
-                    $TTC = $HT + $HT * 0.14;
-                    $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
+                $_SESSION['add'] = true;
+                header("Location: verifyMonth.php");
+            }
+        } else if ($consommation > 400) {
+            $HT = $consommation_f * 1.12;
+            $TTC = $HT + $HT * 0.14;
+            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
 
-                    $result = mysqli_query($mysqli, $sql);
-                    if ($result) {
-                        header("Location: verifyMonth.php");
-                    }
-                } 
-            
-        }else{
-            if ($consommation < 50) {
-                $HT = $consommation * 0.91;
-
-                $TTC = $HT + $HT * 0.14;
-
-                $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
-
-                $result = mysqli_query($mysqli, $sql);
-
-                if ($result) {
-
-                    echo "<script src='../assets/js/sweet.js'>Swal.fire({
-                        position: 'top-end',
-                        icon: 'success',
-                        title: 'Your facture has been added',
-                        showConfirmButton: false,
-                        timer: 1500
-                      })</script>";
-                    header("Location: verifyMonth.php");
-                }
-            } else if ($consommation > 400) {
-                $HT = $consommation * 1.12;
-                $TTC = $HT + $HT * 0.14;
-                $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
-
-                $result = mysqli_query($mysqli, $sql);
-                if ($result) {
-                    header("Location: verifyMonth.php");
-                }
-            } 
-        
+            $result = mysqli_query($mysqli, $sql);
+            if ($result) {
+                $_SESSION['add'] = true;
+                header("Location: verifyMonth.php");
+            }
         }
-    
+    } else {
+        if ($consommation < 50) {
+            $HT = $consommation * 0.91;
+
+            $TTC = $HT + $HT * 0.14;
+
+            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
+
+            $result = mysqli_query($mysqli, $sql);
+
+            if ($result) {
+
+
+                $_SESSION['add'] = true;
+                header("Location: verifyMonth.php");
+            }
+        } else if ($consommation > 400) {
+            $HT = $consommation * 1.12;
+            $TTC = $HT + $HT * 0.14;
+            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
+
+            $result = mysqli_query($mysqli, $sql);
+            if ($result) {
+                $_SESSION['add'] = true;
+                header("Location: verifyMonth.php");
+            }
+        }
+    }
 }
 
 if (isset($_POST['submit'])) {
@@ -109,6 +98,7 @@ if (isset($_POST['submit'])) {
     mysqli_stmt_bind_param($stmt, 'ssssi', $nom, $prenom, $password, $email, $id);
     mysqli_stmt_execute($stmt);
     print_r($sql);
+    $_SESSION['success'] = true;
     header("location: dashboard_fournisseur.php");
     exit;
 }
@@ -130,17 +120,28 @@ if (isset($_POST['submitAdd'])) {
         $result = mysqli_query($mysqli, $sql);
 
         if ($result) {
-            echo "<script>
-            setTimeout(function() {
-                alert('Votre client a été bien enregistrer');
-            }, 3000);
-        </script>";
-
+            $_SESSION['addClient'] = true;
             header("Location: dashboard_fournisseur.php");
         } else {
-            echo "<script>setTimeout(function() {alert('Veuillez ressayer ulterieurement'); }, 3000);</script>";
+            //echo "<script>setTimeout(function() {alert('Veuillez ressayer ulterieurement'); }, 3000);</script>";
+            $_SESSION['notAdd'] = true;
+            header("Location: dashboard_fournisseur.php");
         }
     } else {
-        echo "<script>setTimeout(function() { alert('Un autre client a cet email , essayer avec un autre email.');}, 3000);</script>";
+        //echo "<script>setTimeout(function() { alert('Un autre client a cet email , essayer avec un autre email.');}, 3000);</script>";
+        $_SESSION['addClientAlready'] = true;
+        header("Location: dashboard_fournisseur.php");
+    }
+}
+
+if (isset($_POST['send'])) {
+    $id = $_POST['rec_id'];
+    $reponse = $_POST['response'];
+    $sql = "update reclamation set contenue_reponse = '$reponse' where id = '$id';";
+    $result = mysqli_query($mysqli, $sql);
+
+    if ($result) {
+        $_SESSION['send'] = true;
+        header("Location: showReclamation.php");
     }
 }

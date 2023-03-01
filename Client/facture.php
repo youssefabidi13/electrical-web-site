@@ -19,6 +19,7 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
     <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
@@ -35,6 +36,7 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
 </head>
 
 <body>
+    
     <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="exampleModalLabel" data-bs-backdrop="static" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -45,13 +47,13 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                 <form action="traitement.php" method="POST" id="add_employee_form" enctype="multipart/form-data">
                     <div class="modal-body p-4 bg-light">
                         <div class="row">
-                            <div class="col-lg">
+                            <div class="my-2">
                                 <label for="consommation">Consommation actuelle en Kwh</label>
                                 <input type="number" name="consommation" class="form-control" placeholder="consommation" required min="0">
                             </div>
                             <div class="col-lg">
                                 <label for="mois">Mois</label>
-                                <select  type="number" name="mois" class="form-control" placeholder="Mois" required>
+                                <select type="number" name="mois" class="form-control" placeholder="Mois" required>
                                     <?php
                                     // Récupérer la date actuelle
                                     $now = new DateTime();
@@ -66,7 +68,24 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                                     }
                                     ?>
                                 </select>
+
                             </div>
+                            <div class="col-lg">
+                                <label for="annee">Année</label>
+
+                                <select type="number" name="annee" class="form-control" placeholder="Année" required>
+                                    <?php
+                                    // Récupérer l'année actuelle
+                                    $currentYear = date('Y');
+                                    // Parcourir les 10 années précédentes à partir de l'année actuelle
+                                    for ($i = $currentYear - 5; $i <= $currentYear; $i++) {
+                                        // Afficher chaque année sous forme d'option dans la liste déroulante
+                                        echo '<option value="' . $i . '">' . $i . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+
                         </div>
                         <div class="my-2">
                             <label for="file">Preuve</label>
@@ -89,13 +108,15 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                     <li class="nav-item"></li>
                     <li class="nav-item"><a class="nav-link active" href="facture.php">Mes factures</a></li>
                     <li class="nav-item"></li>
-                    <li class="nav-item"><a class="nav-link" href="response.php">Response</a></li>
+                    <li class="nav-item"><a class="nav-link" href="reclamation.php">Ajouter une reclamation</a></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"><a class="nav-link" href="response.php">Reponses</a></li>
                     <li class="nav-item"></li>
                 </ul><a class="btn btn-primary" href="../logout.php">logout</a>
             </div>
         </div>
     </nav>
-    <section class="py-5 mt-5"><!-- Start: Testimonials -->
+    <section class="py-0 mt-5"><!-- Start: Testimonials -->
         <div class="container py-5">
             <div class="row mb-5">
                 <div class="col-md-8 col-xl-6 text-center mx-auto">
@@ -107,7 +128,7 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
 
                 <div class="table-responsive table table-hover table-bordered results">
                     <?php
-                    
+
                     // Execute the SQL query
                     $sql = 'SELECT *
                     FROM facture  where client_id = ' . $_SESSION["id"] . ' and prix_HT is not null and prix_TTC is not null;';
@@ -119,6 +140,7 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                     echo "<thead class='bill-header cs'>
                                 <tr>
                                 <th id='trs-hd-1' class='col-lg-1' style='color:black'>Id</th>
+                                <th id='trs-hd-2' class='col-lg-2' style='color:black'>Année</th>
                                 <th id='trs-hd-2' class='col-lg-2' style='color:black'>Mois</th>
                                 <th id='trs-hd-3' class='col-lg-4' style='color:black'>Consommation total</th>
                                 <th id='trs-hd-4' class='col-lg-3' style='color:black'>prix HT en MAD</th>
@@ -132,6 +154,7 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                     while ($row = $result->fetch_assoc()) {
                         echo "<tr>";
                         echo "<td>" . $row['id'] . "</td>";
+                        echo "<td>" . $row['annee'] . "</td>";
                         echo "<td>" . $row['mois'] . "</td>";
                         echo "<td>" . $row['consommation_monsuelle'] . "</td>";
                         echo "<td>" . $row['prix_HT'] . "</td>";
@@ -146,12 +169,11 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                     }
                     echo "</tbody>";
                     echo "</table>";
-
                     ?>
                 </div>
             </div>
         </div><!-- End: Testimonials --><!-- Start: Testimonials -->
-        <div class="container py-5">
+        <div class="container py-0">
             <div class="row mb-5">
                 <div class="col-md-8 col-xl-6 text-center mx-auto">
                     <h2 class="fw-bold"><br><span class="underline pb-2">Options</span></h2>
@@ -173,8 +195,8 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
             </td>
             </tr>
             <tr>
-                <td>Ajouter reclamation</td>
-                <td><button class="btn btn-primary" type="button">Ajouter reclamation</button></td>
+                <td>Voir les factures non payées</td>
+                <td><a class="btn btn-primary" href="dashboard.php">voir les factures non payées</a></td>
             </tr>
             </tbody>
             </table>
@@ -220,6 +242,78 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
     <script src="../assets/js/Dynamic-Table-dynamic-table.js"></script>
     <script src="../assets/js/startup-modern.js"></script>
     <script src="../assets/js/Table-With-Search-search-table.js"></script>
+    <?php
+    if (isset($_SESSION['moisDeja']) && $_SESSION['moisDeja'] == true) {
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Le mois est déjà enregistré!',
+              })
+            </script>";
+        $_SESSION['moisDeja'] = false;
+    } else if (isset($_SESSION['add']) && $_SESSION['add'] == true) {
+        echo "<script>
+        Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Votre consommation a été enregistré',
+                showConfirmButton: false,
+                timer: 1500
+              })
+            </script>";
+        $_SESSION['add'] = false;
+    } else if (isset($_SESSION['notAdd']) && $_SESSION['notAdd'] == true) {
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Votre consommation n'a pas été enregistré, Veuillez ressayer ulterieurement !',
+              })
+            </script>";
+        $_SESSION['notAdd'] = false;
+    } else if (isset($_SESSION['addIf']) && $_SESSION['addIf'] == true) {
+        echo "
+        <script>
+        Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Votre consommation a été enregistré,veullez attendre la validation du manager ',
+                showConfirmButton: false,
+                timer: 3500
+              })
+            </script>";
+        $_SESSION['addIf'] = false;
+    }
+    if (isset($_SESSION['error']) && $_SESSION['error'] == true) {
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'there was an error uploading your file !!',
+              })
+            </script>";
+        $_SESSION['error'] = false;
+    } elseif (isset($_SESSION['big']) && $_SESSION['big'] == true) {
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'your file is too big !',
+              })
+            </script>";
+        $_SESSION['big'] = false;
+    } else if (isset($_SESSION['type']) && $_SESSION['type'] == true) {
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'you cannot upload files of this type !',
+              })
+            </script>";
+        $_SESSION['type'] = false;
+    }
+    ?>
     <script>
         $(document).ready(function() {
             $('#client_data').DataTable();

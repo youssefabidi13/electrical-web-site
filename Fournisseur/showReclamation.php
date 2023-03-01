@@ -16,8 +16,15 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
   <title>Reclamtions</title>
+  <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
   <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap">
+  <link rel="stylesheet" href="../assets/fonts/font-awesome.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.js"></script>
   <link rel="stylesheet" href="../assets/css/Button-Outlines---Pretty.css">
   <link rel="stylesheet" href="../assets/css/Dynamic-Table.css">
   <link rel="stylesheet" href="../assets/css/Fully-responsive-table.css">
@@ -44,8 +51,8 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
           <li class="nav-item"></li>
           <li class="nav-item"><a class="nav-link" href="verifyMonth.php">Mensuelles</a></li>
           <li class="nav-item"></li>
-          <a class="nav-link active" href="showReclamation.php">Reclamation</a>
-          </li>
+          <li class="nav-item"><a class="nav-link active" href="showReclamation.php">Reclamation</a></li>
+          <li class="nav-item"></li>
         </ul>
         <a class="btn btn-primary" href="../logout.php">logout</a>
       </div>
@@ -61,41 +68,55 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
         </div>
       </div>
       <div class="col-md-12 search-table-col">
+
         <div class="table-responsive table table-hover table-bordered results">
-          <table class="table table-hover table-bordered">
-            <thead class="bill-header cs">
-              <tr>
-                <th id="trs-hd-1" class="col-lg-3">Id</th>
-                <th id="trs-hd-2" class="col-lg-3">Nom</th>
-                <th id="trs-hd-3" class="col-lg-3">Prenom</th>
-                <th id="trs-hd-4" class="col-lg-3">Sujet</th>
-                <th id="trs-hd-4" class="col-lg-5">Reclamation</th>
-                <th id="trs-hd-4" class="col-lg-5">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- <tr class="warning no-result">
-                        <td colspan="12"><i class="fa fa-warning"></i>  No Result !!!</td>
-                    </tr> -->
-              <tr>
-                <td>1</td>
-                <td>ABIDI</td>
-                <td>Youssef</td>
-                <td>Autre</td>
-                <td>
-                  <p>
-                    csd fqdfq fsf f sdfg s fsf qf qfq fqs fq f fqsdsqdqdq
-                    qsdasqdqdq dqsdqsd qsd q
-                  </p>
-                </td>
-                <td>
-                  <button class="btn btn-primary" style="margin-left: 0px" type="submit">
-                    Repondre
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <?php
+          $status = false;
+          // Execute the SQL query
+          $sql = "SELECT *
+        FROM reclamation
+        WHERE contenue_reponse IS NULL OR status = '$status';";
+          $result = mysqli_query($mysqli, $sql);
+          if (!$result) {
+            die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));
+          }
+          if ($result->num_rows > 0) {
+          echo "<table class='table table-hover table-bordered' id='client_data'>";
+          echo "<thead class='bill-header cs'>
+                                <tr>
+                                <th id='trs-hd-1' class='col-lg-3' style='color:black'>Id reclamation</th>
+                                <th id='trs-hd-1' class='col-lg-2' style='color:black'>Id client</th>
+                                <th id='trs-hd-2' class='col-lg-2' style='color:black'>Subject</th>
+                                <th id='trs-hd-2' class='col-lg-7' style='color:black'>Reclamation</th>
+                                <th id='trs-hd-2' class='col-lg-3' style='color:black'>Action</th>
+
+                                </tr>
+                            </thead>";
+          echo "<tbody>";
+          while ($row = $result->fetch_assoc()) {
+            echo "<tr>";
+            echo "<td>" . $row['id'] . "</td>";
+            echo "<td>" . $row['client_id'] . "</td>";
+
+            if ($row['autre_type'] == null) {
+              echo "<td>" . $row['type_rec'] . "</td>";
+            } else {
+              echo "<td>" . $row['autre_type'] . "</td>";
+            }
+            echo "<td>" . $row['contenue'] . "</td>";
+
+            echo '<td><a class="btn btn-primary" type="button" href="responseReclamation.php?id=' . $row['id'] . '&id_client=' . $row['client_id'] . '">Repondre</a></td>';
+            echo "</tr>";
+          }
+
+          echo "</tbody>";
+          echo "</table>";
+        }else {
+            echo '<div class="alert alert-success" role="alert">
+Vous n\'avez pas une reclamation actuellement.
+</div>';
+        }
+          ?>
         </div>
       </div>
     </div>
@@ -115,6 +136,26 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
   <script src="../assets/js/Dynamic-Table-dynamic-table.js"></script>
   <script src="../assets/js/startup-modern.js"></script>
   <script src="../assets/js/Table-With-Search-search-table.js"></script>
+  <?php
+     if (isset($_SESSION['send']) && $_SESSION['send'] == true) {
+        echo "<script>
+        Swal.fire({
+                icon: 'success',
+                title: 'Votre reponse a été enregistré envoyée',
+                showConfirmButton: false,
+                timer: 1500
+              })
+            </script>";
+        $_SESSION['send'] = false;
+    } 
+    
+    ?>
+    <script>
+        $(document).ready(function() {
+            $('#client_data').DataTable();
+        });
+    </script>
+
 </body>
 
 </html>
