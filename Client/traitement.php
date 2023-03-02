@@ -3,6 +3,103 @@
 require_once "../config.php";
 // Initialize the session
 session_start();
+require('../FPDF/FPDF/fpdf.php');
+if (isset($_GET['idFacture'])) {
+    $id = $_GET['idFacture'];
+
+    $sql = 'SELECT f.*, c.nom as nom, c.prenom as prenom, a.zone_number as zone_number
+    FROM facture f 
+    JOIN client c ON f.client_id = c.ID 
+    JOIN agent a ON c.agent_id = a.id 
+    WHERE f.id = ' . $id . ';';
+
+    $result = mysqli_query($mysqli, $sql);
+    $row = $result->fetch_assoc();
+    if (!$result) {
+        die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));
+    } else {
+        $nom = $row['nom'];
+        $prenom = $row['prenom'];
+        $mois = $row['mois'];
+        $zone_geographique = $row['zone_number'];
+        $consommation = $row['consommation_monsuelle'];
+        $prix_HT = $row['prix_HT'];
+        $prix_TTC = $row['prix_TTC'];
+        $status = $row['status_f'];
+        $nom_complet = $nom . " " . $prenom;
+        $_SESSION['download'] = true;
+        // Création de la facture
+        $pdf = new FPDF();
+        $pdf->AddPage();
+
+        // Ajout du titre de la facture
+        $pdf->SetFont('Arial', 'BIU', 16);
+        $pdf->SetX(90);
+        $pdf->SetTextColor(255,0,0);
+        $pdf->Cell(40, 10, 'Facture');
+        $pdf->SetTextColor(0,0,0);
+
+        // Ajout des informations de la facture
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Ln();
+        $pdf->Cell(40, 10, 'Nom : ');
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->Cell(60, 10, $nom_complet);
+
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Ln();
+        $pdf->Cell(40, 10, 'Zone geographique :');
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->SetX(60);
+        $pdf->Cell(60, 10, $zone_geographique);
+
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Ln();
+        $pdf->Cell(40, 10, 'Mois :');
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->Cell(60, 10, $mois);
+
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Ln();
+        $pdf->Cell(40, 10, 'Consommation totale jusqu a ce mois :');
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->SetX(100);
+
+        $pdf->Cell(60, 10, $consommation);
+
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Ln();
+        $pdf->Cell(40, 10, 'Prix HT :');
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->Cell(60, 10, $prix_HT);
+
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Ln();
+        $pdf->Cell(40, 10, 'Prix TTC :');
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->Cell(60, 10, $prix_TTC);
+
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Ln();
+        $pdf->Cell(40, 10, 'Statut :');
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->Cell(60, 10, $status);
+
+        if($status == 'non_payee'){
+            $pdf->SetFont('Arial', 'B', 12);
+            $pdf->Ln();
+            $pdf->SetFont('Arial', '', 12);
+            $pdf->SetTextColor(255,0,0);
+            $pdf->Cell(60, 10, 'Vous devez payee votre facture aussi vite que possible ');
+        }
+
+        // Génération du PDF
+        $pdf->Output('F', 'facture.pdf');
+        header("Location: facture.php");
+    }
+}
+
+
 
 
 // Check if the user is logged in, if not then redirect him to login page
@@ -236,7 +333,7 @@ if (isset($_POST['submitRec'])) {
         }
     }
 }
-if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+if (isset($_GET['id'])) {
     $id = $_GET['id'];
     $sql = "DELETE FROM reclamation WHERE id='$id'";
     $result = mysqli_query($mysqli, $sql);

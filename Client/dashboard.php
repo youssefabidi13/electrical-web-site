@@ -100,7 +100,7 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                             echo "<td>" . $row['prix_HT'] . "</td>";
                             echo "<td>" . $row['prix_TTC'] . "</td>";
                             echo "<td>" . $row['status_f'] . "</td>";
-                            echo '<td><button class="btn btn-danger" style="margin-left: 5px;" type="submit">Payez votre facture</button></td>';
+                            echo '<td><a class="btn btn-danger" type="button" href="traitement.php?idFacture=' . $row['id'] . '">Payez votre facture</a></td>';
                             echo "</tr>";
                         }
                         echo "</tbody>";
@@ -190,6 +190,19 @@ Vous avez payé tous les factures
           })
         </script>";
     $_SESSION['delete'] = false;
+}
+if (isset($_SESSION['download']) && $_SESSION['download'] == true) {
+    echo "
+    <script>
+    Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: 'votre facture a été bien telechargé',
+            showConfirmButton: false,
+            timer: 3500
+          })
+        </script>";
+    $_SESSION['download'] = false;
 }
    ?> 
 </body>

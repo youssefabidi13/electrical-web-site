@@ -2,49 +2,84 @@
 require_once "../config.php";
 // Initialize the session
 session_start();
- 
+
 // Check if the user is logged in, if not then redirect him to login page
-if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: ../login.php");
     exit;
-}  if (isset($_POST['submit'])) {
+}
+if (isset($_POST['submit'])) {
 
 
 
-        $file = $_FILES['file'];
-        $fileName = $_FILES['file']['name'];
-        $fileTmpName = $_FILES['file']['tmp_name'];
-        $fileSize = $_FILES['file']['size'];
-        $fileError = $_FILES['file']['error'];
-        $fileType = $_FILES['file']['type'];
-        $fileExt = explode('.', $fileName);
-        $fileActualExt = strtolower(end($fileExt));
-        $allowed = array('txt','docx');
-        if (in_array($fileActualExt, $allowed)) {
-            if ($fileError === 0) {
-                if ($fileSize < 1000000000) {
-                    $fileNameNew = uniqid('', true) . "." . $fileActualExt;
-                    $fileDestination = 'uploads/' . $fileNameNew;
-                    move_uploaded_file($fileTmpName, $fileDestination);
-                    $_SESSION['add'] = true;
-                } else {
-                    $_SESSION['big'] = true;
-    
-                    //echo "your file is too big !";
+    $file = $_FILES['file'];
+    $fileName = $_FILES['file']['name'];
+    $fileTmpName = $_FILES['file']['tmp_name'];
+    $fileSize = $_FILES['file']['size'];
+    $fileError = $_FILES['file']['error'];
+    $fileType = $_FILES['file']['type'];
+    $fileExt = explode('.', $fileName);
+    $fileActualExt = strtolower(end($fileExt));
+    $allowed = array('txt', 'docx');
+    if (in_array($fileActualExt, $allowed)) {
+        if ($fileError === 0) {
+            if ($fileSize < 1000000000) {
+                $fileNameNew = uniqid('', true) . "." . $fileActualExt;
+                $fileDestination = 'uploads/' . $fileNameNew;
+                move_uploaded_file($fileTmpName, $fileDestination);
+                echo "<pre>" . var_dump($fileDestination) . "</pre>";
+                $file = fopen($fileDestination, "r");
+
+                $line_count = 0; // initialize line counter
+                $id = $_SESSION['id'];
+                while (!feof($file)) {
+                    $line_of_text = fgets($file);
+
+                    // skip first line
+                    if ($line_count == 0) {
+                        $line_count++;
+                        continue;
+                    }
+
+                    // split line into words
+                    $words = explode(' ', $line_of_text);
+                    $i = 0; // initialize index
+                    foreach ($words as $word) {
+                        if ($word == '') {
+                            continue;
+                        } else {
+                            ${"word_$i"} = $word; // create variable with dynamic name
+                            $i++; // increment index
+                        }
+                    }
+                    $sql = "INSERT INTO consommation_annuelle (client_id,consommation,annee,agent_ID)
+                    VALUES ('$word_1', '$word_2', '$word_0','$id')";
+                    $result = mysqli_query($mysqli, $sql);
+
+                    // increment line count
+                    $line_count++;
                 }
+
+                fclose($file);
+
+
+
+                $_SESSION['add'] = true;
             } else {
-                $_SESSION['error'] = true;
-    
-                //echo "there was an error uploading your file !";
+                $_SESSION['big'] = true;
+
+                //echo "your file is too big !";
             }
         } else {
-            $_SESSION['type'] = true;
-    
-            //echo "you cannot upload files of this type !";
+            $_SESSION['error'] = true;
+
+            //echo "there was an error uploading your file !";
         }
-    }else{
-        $_SESSION['notAdd'] = true;
+    } else {
+        // $_SESSION['type'] = true;
+        //echo "you cannot upload files of this type !";
     }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -75,9 +110,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 <body>
     <nav class="navbar navbar-light navbar-expand-md fixed-top navbar-shrink py-3" id="mainNav">
         <div class="container"><a class="navbar-brand d-flex align-items-center" href="/"><span>ELECTRICAL WEB
-                    SITE</span></a><button data-bs-toggle="collapse" data-bs-target="#navcol-1"
-                class="navbar-toggler"><span class="visually-hidden">Toggle navigation</span><span
-                    class="navbar-toggler-icon"></span></button>
+                    SITE</span></a><button data-bs-toggle="collapse" data-bs-target="#navcol-1" class="navbar-toggler"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-1" style="padding-left: 0px;">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"></li>
@@ -98,9 +131,9 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
                             annuelles </span></h2>
                 </div>
             </div>
-        
-        
-        <div class="col-md-12 search-table-col">
+
+
+            <div class="col-md-12 search-table-col">
                 <div class="table-responsive table table-hover table-bordered results">
                     <?php
 
@@ -143,36 +176,36 @@ A l\'instant il n\' y a pas un fichier inserer par vous .
                 </div>
             </div>
             <div class="custom-file">
-            <form method="post" action="agent.php" enctype="multipart/form-data">
-                <input class="custom-file-input" type="file" name="file" />
-                <label class="form-label custom-file-label">Upload File consommation_annuel</labelclass>
-                <input type="submit" name="submit" class="btn btn-primary" value="Envoyer">
-            </form>  
+                <form method="post" action="agent.php" enctype="multipart/form-data">
+                    <input class="custom-file-input" type="file" name="file" />
+                    <label class="form-label custom-file-label">Upload File consommation_annuel</labelclass>
+                        <input type="submit" name="submit" class="btn btn-primary" value="Envoyer">
+                </form>
             </div>
-            
+
         </div>
     </section>
     <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.6.0/umd/popper.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/dataTables.bootstrap4.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/1.6.5/js/dataTables.buttons.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.flash.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-  <script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.html5.min.js"></script>
-  <script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.print.min.js"></script>
-  <script src="../assets/js/DataTable---Fully-BSS-Editable-style.js"></script>
-  <script src="../assets/js/Dynamic-Table-dynamic-table.js"></script>
-  <script src="../assets/js/startup-modern.js"></script>
-  <script src="../assets/js/Table-With-Search-search-table.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.6.0/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.6.5/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.flash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.print.min.js"></script>
+    <script src="../assets/js/DataTable---Fully-BSS-Editable-style.js"></script>
+    <script src="../assets/js/Dynamic-Table-dynamic-table.js"></script>
+    <script src="../assets/js/startup-modern.js"></script>
+    <script src="../assets/js/Table-With-Search-search-table.js"></script>
     <script>
         $(document).ready(function() {
             $('#client_data').DataTable();
         });
     </script>
- <?php
+    <?php
     if (isset($_SESSION['add']) && $_SESSION['add'] == true) {
         echo "<script>
         Swal.fire({
@@ -211,7 +244,7 @@ A l\'instant il n\' y a pas un fichier inserer par vous .
               })
             </script>";
         $_SESSION['type'] = false;
-    }else if(isset($_SESSION['notAdd']) && $_SESSION['notAdd'] == true){
+    } else if (isset($_SESSION['notAdd']) && $_SESSION['notAdd'] == true) {
         echo "<script>
             Swal.fire({
                 icon: 'error',

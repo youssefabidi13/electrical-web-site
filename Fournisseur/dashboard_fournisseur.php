@@ -16,6 +16,7 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Dashboard</title>
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
     <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.js"></script>
@@ -37,6 +38,7 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
 </head>
 
 <body>
+    <?php $id = $_SESSION['id']; ?>
     <div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="exampleModalLabel" data-bs-backdrop="static" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -61,8 +63,19 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                             <input type="email" name="email" class="form-control" placeholder="Email" required>
                         </div>
                         <div class="my-2">
-                            <label for="adresse">Id d'agent</label>
-                            <input type="number" name="agent_id" class="form-control" placeholder="Agent_id" required>
+                            <label for="agent_id">Id d'agent</label>
+                            <select name="agent_id" class="form-control" required>
+                                <?php
+                                // Récupération des ID des agents dans la table `agent`
+                                $sql5 = "SELECT id FROM agent where fournisseur_id ='$id';";
+                                $result5 = mysqli_query($mysqli, $sql5);
+
+                                // Affichage des options dans la liste déroulante
+                                while ($row = mysqli_fetch_assoc($result5)) {
+                                    echo "<option value='" . $row['id'] . "'>" . $row['id'] . "</option>";
+                                }
+                                ?>
+                            </select>
                         </div>
                         <div class="my-2">
                             <label for="password">Password</label>
@@ -99,14 +112,26 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
     </nav>
     <section class="py-5 mt-5"><!-- Start: Testimonials -->
         <div class="container py-5">
+
             <div class="row mb-5">
                 <div class="col-md-8 col-xl-6 text-center mx-auto">
                     <h2 class="fw-bold"><br /><span class="underline pb-2">Les factures non payées</span></h2>
                 </div>
             </div>
+
             <?php
             // Execute the SQL query
-            $sql = 'SELECT * FROM facture  where status_f = "non_payee" and prix_HT is not NULL and prix_TTC is not null;';
+            $sql = "SELECT * FROM facture  
+        WHERE status_f = 'non_payee' 
+        AND prix_HT IS NOT NULL 
+        AND prix_TTC IS NOT NULL 
+        AND client_id IN (
+            SELECT c.ID
+            FROM client c
+            INNER JOIN agent a ON c.agent_id = a.id
+            INNER JOIN manager m ON a.fournisseur_id = m.id
+            WHERE m.id = $id
+        )";
             $result = mysqli_query($mysqli, $sql);
             if (!$result) {
                 die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));
@@ -175,13 +200,15 @@ Tous les factures ont été payée
                     <?php
 
                     // Execute the SQL query
-                    $sql = "SELECT c.ID, c.nom, c.prenom, c.password,c.email ,a.zone_number
-                        FROM client c
-                        JOIN agent a ON c.agent_id = a.id;";
+                    $sql = "SELECT c.* , a.zone_number
+                    FROM client c
+                    INNER JOIN agent a ON c.agent_id = a.id
+                    INNER JOIN manager m ON a.fournisseur_id = m.id
+                    WHERE m.id = '$id';";
                     $result = $mysqli->query($sql);
 
                     // Output the HTML table
-                    echo "<table class='table table-hover table-bordered' id='client_data'>";
+                    echo "<table class='table table-hover table-bordered' id='client_data1'>";
                     echo "<thead class='bill-header cs'>
                             <tr>
                                 <th id='trs-hd-1' class='col-lg-1' style='color:black'>Id client</th>
@@ -235,6 +262,11 @@ Tous les factures ont été payée
     <script>
         $(document).ready(function() {
             $('#client_data').DataTable();
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('#client_data1').DataTable();
         });
     </script>
     <?php

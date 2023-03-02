@@ -36,7 +36,7 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
 </head>
 
 <body>
-    
+
     <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="exampleModalLabel" data-bs-backdrop="static" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -136,8 +136,10 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                     if (!$result) {
                         die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));
                     }
-                    echo "<table class='table table-hover table-bordered' id='client_data'>";
-                    echo "<thead class='bill-header cs'>
+                    if ($result->num_rows > 0) {
+
+                        echo "<table class='table table-hover table-bordered' id='client_data'>";
+                        echo "<thead class='bill-header cs'>
                                 <tr>
                                 <th id='trs-hd-1' class='col-lg-1' style='color:black'>Id</th>
                                 <th id='trs-hd-2' class='col-lg-2' style='color:black'>Année</th>
@@ -150,25 +152,31 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
     
                                 </tr>
                             </thead>";
-                    echo "<tbody>";
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<tr>";
-                        echo "<td>" . $row['id'] . "</td>";
-                        echo "<td>" . $row['annee'] . "</td>";
-                        echo "<td>" . $row['mois'] . "</td>";
-                        echo "<td>" . $row['consommation_monsuelle'] . "</td>";
-                        echo "<td>" . $row['prix_HT'] . "</td>";
-                        echo "<td>" . $row['prix_TTC'] . "</td>";
-                        echo "<td>" . $row['status_f'] . "</td>";
-                        if ($row['status_f'] == 'non_payee') {
-                            echo '<td><button class="btn btn-danger" style="margin-left: 5px;" type="submit">Payez votre facture</button></td>';
-                        } else {
-                            echo '<td><button class="btn btn-primary" style="margin-left: 5px;" type="submit">Telecharger facture</button></td>';
+                        echo "<tbody>";
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>";
+                            echo "<td>" . $row['id'] . "</td>";
+                            echo "<td>" . $row['annee'] . "</td>";
+                            echo "<td>" . $row['mois'] . "</td>";
+                            echo "<td>" . $row['consommation_monsuelle'] . "</td>";
+                            echo "<td>" . $row['prix_HT'] . "</td>";
+                            echo "<td>" . $row['prix_TTC'] . "</td>";
+                            echo "<td>" . $row['status_f'] . "</td>";
+                            if ($row['status_f'] == 'non_payee') {
+                                echo '<td><a class="btn btn-danger" type="button" href="traitement.php?idFacture=' . $row['id'] . '">Payez votre facture</a></td>';
+                            } else {
+                                echo '<td><a class="btn btn-danger" type="button" href="traitement.php?idFacture=' . $row['id'] . '">Telecharger la facture</a></td>';
+
+                            }
+                            echo "</tr>";
                         }
-                        echo "</tr>";
+                        echo "</tbody>";
+                        echo "</table>";
+                    } else {
+                        echo '<div class="alert alert-success" role="alert">
+    Il n\'a pas de facture pour le moment
+    </div>';
                     }
-                    echo "</tbody>";
-                    echo "</table>";
                     ?>
                 </div>
             </div>
@@ -313,7 +321,21 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
             </script>";
         $_SESSION['type'] = false;
     }
+    if (isset($_SESSION['download']) && $_SESSION['download'] == true) {
+        echo "
+        <script>
+        Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'votre facture a été bien telechargé',
+                showConfirmButton: false,
+                timer: 3500
+              })
+            </script>";
+        $_SESSION['download'] = false;
+    }
     ?>
+    
     <script>
         $(document).ready(function() {
             $('#client_data').DataTable();
