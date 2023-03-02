@@ -65,11 +65,16 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
 
                     <div class="table-responsive table table-hover table-bordered results">
                         <?php
+                        $idFour = $_SESSION['id'];
                         $status = false;
                         // Execute the SQL query
                         $sql = "SELECT a.id,a.client_id , a.consommation, f.consommation_monsuelle,(a.consommation-f.consommation_monsuelle) as difference 
                         FROM consommation_annuelle a , facture f
-                        WHERE f.client_id=a.client_id and f.mois = 12;" ;
+                        WHERE f.client_id=a.client_id and f.mois = 12 and a.client_id in (SELECT c.ID
+            FROM client c
+            INNER JOIN agent a ON c.agent_id = a.id
+            INNER JOIN manager m ON a.fournisseur_id = m.id
+            WHERE m.id = $idFour)";
                         $result = mysqli_query($mysqli, $sql);
                         if (!$result) {
                             die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));
@@ -88,12 +93,12 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                     </thead>";
                             echo "<tbody>";
                             while ($row = $result->fetch_assoc()) {
-                                $id=$row['id'];
+                                $id = $row['id'];
                                 echo "<tr>";
                                 echo "<td>" . $row['client_id'] . "</td>";
                                 echo "<td>" . $row['consommation'] . "</td>";
                                 echo "<td>" . $row['consommation_monsuelle'] . "</td>";
-                                $difference =$row['difference'];
+                                $difference = $row['difference'];
                                 if ($row['difference'] == 0) {
                                     $sql1 = "update consommation_annuelle set status = 'egale' and decalage='$difference' where id = '$id';";
                                     $sql2 = "update consommation_annuelle set  decalage='$difference' where id = '$id';";
@@ -102,14 +107,22 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                                     $result2 = mysqli_query($mysqli, $sql2);
 
                                     echo "<td>egale</td>";
-                                } else if($row['difference'] > 0){
+                                } else if ($row['difference'] < -100) {
                                     $sql1 = "update consommation_annuelle set status = 'superieur'  where id = '$id';";
                                     $sql2 = "update consommation_annuelle set  decalage='$difference' where id = '$id';";
                                     $result1 = mysqli_query($mysqli, $sql1);
                                     $result2 = mysqli_query($mysqli, $sql2);
 
                                     echo "<td>superieur</td>";
-                                }else{
+                                }else if ($row['difference'] <= 100 && $row['difference'] >= -100) {
+                                    $difference=0;
+                                    $sql1 = "update consommation_annuelle set status = 'egale'  where id = '$id';";
+                                    $sql2 = "update consommation_annuelle set  decalage='$difference' where id = '$id';";
+                                    $result1 = mysqli_query($mysqli, $sql1);
+                                    $result2 = mysqli_query($mysqli, $sql2);
+
+                                    echo "<td>toleré</td>";
+                                } else if ($row['difference'] > 100){
                                     $sql1 = "update consommation_annuelle set status = 'inferieur' where id = '$id';";
                                     $sql2 = "update consommation_annuelle set  decalage='$difference' where id = '$id';";
                                     $result1 = mysqli_query($mysqli, $sql1);

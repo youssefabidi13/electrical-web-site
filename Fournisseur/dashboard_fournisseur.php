@@ -39,6 +39,7 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
 
 <body>
     <?php $id = $_SESSION['id']; ?>
+
     <div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="exampleModalLabel" data-bs-backdrop="static" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -110,18 +111,136 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
             </div>
         </div>
     </nav>
+
     <section class="py-5 mt-5"><!-- Start: Testimonials -->
         <div class="container py-5">
+            <!-- Content Row -->
+            <div class="row no-gutters">
 
-            <div class="row mb-5">
-                <div class="col-md-8 col-xl-6 text-center mx-auto">
-                    <h2 class="fw-bold"><br /><span class="underline pb-2">Les factures non payées</span></h2>
+                <!-- somme facture non payee -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Factures non payées</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800"><?php
+                                                                                        $sql1 = 'SELECT sum(prix_TTC) as sum FROM facture  where status_f = "non_payee" and prix_HT is not NULL and prix_TTC is not null;';
+                                                                                        $result1 = mysqli_query($mysqli, $sql1);
+                                                                                        $row1 = $result1->fetch_assoc();
+                                                                                        echo $row1['sum'] . " MAD";
+                                                                                        ?></div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fa fa-dollar fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Earnings (Monthly) Card Example -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        <label for="mois">Consommation par mois: </label>
+                                        <div id="consommationM" class="h5 mb-0 font-weight-bold text-gray-800">
+                                            <?php
+                                            if (isset($_POST['subMois'])) {
+                                                $selectedMois = $_POST["mois"];
+                                                $sql2 = "SELECT sum(prix_TTC) as sum FROM facture  where mois='$selectedMois'";
+                                                $result2 = mysqli_query($mysqli, $sql2);
+                                                $row2 = $result2->fetch_assoc();
+                                                if ($row2['sum'] != null) {
+                                                    echo $row2['sum'] . " KWH";
+                                                } else {
+                                                    echo "<div class='alert alert-primary'>there is no data</div>";
+                                                }
+                                            } 
+                                                echo '<form method="post" action="dashboard_fournisseur.php">
+                                           <select id="mois" class="shadow form-control" name="mois" placeholder="mois" >';
+                                                for ($i = 1; $i < 13; $i++) {
+                                                    echo '<option value="' . $i . '">' . $i . '</option>';
+                                            
+                                                }
+                                                echo '</select><br>';
+
+                                                echo '<button class=" btn btn-primary" type="submit" name="subMois">Submit</button>
+                                        </form>';
+                                            
+
+                                            ?>
+                                        </div>
+
+
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Earnings (Monthly) Card Example -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks
+                                </div>
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col-auto">
+                                        <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="progress progress-sm mr-2">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa fa-clipboard-list fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <?php
-            // Execute the SQL query
-            $sql = "SELECT * FROM facture  
+            <!-- Pending Requests Card Example -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Pending Requests</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa fa-comments fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-5">
+            <div class="col-md-8 col-xl-6 text-center mx-auto">
+                <h2 class="fw-bold"><br /><span class="underline pb-2">Les factures non payées</span></h2>
+            </div>
+        </div>
+
+        <?php
+        // Execute the SQL query
+        $sql = "SELECT * FROM facture  
         WHERE status_f = 'non_payee' 
         AND prix_HT IS NOT NULL 
         AND prix_TTC IS NOT NULL 
@@ -132,18 +251,18 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
             INNER JOIN manager m ON a.fournisseur_id = m.id
             WHERE m.id = $id
         )";
-            $result = mysqli_query($mysqli, $sql);
-            if (!$result) {
-                die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));
-            }
-            ?>
+        $result = mysqli_query($mysqli, $sql);
+        if (!$result) {
+            die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));
+        }
+        ?>
 
-            <?php
-            echo " <div class='col-md-12 search-table-col'>
+        <?php
+        echo " <div class='col-md-12 search-table-col'>
                     <div class='table-responsive table table-hover table-bordered results'>";
-            if ($result->num_rows > 0) {
-                echo "<table class='table table-hover table-bordered' id='client_data'>";
-                echo "<thead class='bill-header cs'>
+        if ($result->num_rows > 0) {
+            echo "<table class='table table-hover table-bordered' id='client_data'>";
+            echo "<thead class='bill-header cs'>
                 <tr>
                 <th id='trs-hd-1' class='col-lg-1' style='color:black'>Id</th>
                 <th id='trs-hd-1' class='col-lg-1' style='color:black'>Id client</th>
@@ -157,30 +276,30 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
 
                 </tr>
             </thead>";
-                echo "<tbody>";
-                while ($row = $result->fetch_assoc()) {
-                    echo "<tr>";
-                    echo "<td>" . $row['id'] . "</td>";
-                    echo "<td>" . $row['client_id'] . "</td>";
-                    echo "<td>" . $row['annee'] . "</td>";
-                    echo "<td>" . $row['mois'] . "</td>";
-                    echo "<td>" . $row['consommation_monsuelle'] . "</td>";
-                    echo "<td>" . $row['prix_HT'] . "</td>";
-                    echo "<td>" . $row['prix_TTC'] . "</td>";
-                    echo "<td>" . $row['status_f'] . "</td>";
-                    echo '<td><button class="btn btn-danger" style="margin-left: 5px;" type="submit">Envoyer un avertissement</button></td>';
-                    echo "</tr>";
-                }
-                echo "</tbody>";
-                echo "</table>";
-                echo "</div>
+            echo "<tbody>";
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr>";
+                echo "<td>" . $row['id'] . "</td>";
+                echo "<td>" . $row['client_id'] . "</td>";
+                echo "<td>" . $row['annee'] . "</td>";
+                echo "<td>" . $row['mois'] . "</td>";
+                echo "<td>" . $row['consommation_monsuelle'] . "</td>";
+                echo "<td>" . $row['prix_HT'] . "</td>";
+                echo "<td>" . $row['prix_TTC'] . "</td>";
+                echo "<td>" . $row['status_f'] . "</td>";
+                echo '<td><button class="btn btn-danger" style="margin-left: 5px;" type="submit">Envoyer un avertissement</button></td>';
+                echo "</tr>";
+            }
+            echo "</tbody>";
+            echo "</table>";
+            echo "</div>
                             </div>";
-            } else {
-                echo '<div class="alert alert-success" role="alert">
+        } else {
+            echo '<div class="alert alert-success" role="alert">
 Tous les factures ont été payée
 </div>';
-            }
-            ?>
+        }
+        ?>
 
         </div><!-- End: Testimonials -->
     </section>

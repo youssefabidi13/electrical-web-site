@@ -71,11 +71,16 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
 
         <div class="table-responsive table table-hover table-bordered results">
           <?php
+          $idFour = $_SESSION['id'];
           $status = false;
           // Execute the SQL query
           $sql = "SELECT *
-        FROM reclamation
-        WHERE contenue_reponse IS NULL OR status = '$status';";
+        FROM reclamation r
+        WHERE contenue_reponse IS NULL OR status = '$status' and r.client_id in (SELECT c.ID
+            FROM client c
+            INNER JOIN agent a ON c.agent_id = a.id
+            INNER JOIN manager m ON a.fournisseur_id = m.id
+            WHERE m.id = $idFour);";
           $result = mysqli_query($mysqli, $sql);
           if (!$result) {
             die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));

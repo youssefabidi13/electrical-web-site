@@ -56,10 +56,14 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
             <div class="col-md-12 search-table-col">
                 <div class="table-responsive table table-hover table-bordered results">
                     <?php
-
+                    $idFour = $_SESSION['id'];
                     // Execute the SQL query
-                    $sql = 'SELECT *
-                    FROM facture  where prix_HT is  null and prix_TTC is  null';
+                    $sql = "SELECT *
+                    FROM facture f  where prix_HT is  null and prix_TTC is  null and f.client_id in (SELECT c.ID
+            FROM client c
+            INNER JOIN agent a ON c.agent_id = a.id
+            INNER JOIN manager m ON a.fournisseur_id = m.id
+            WHERE m.id = '$idFour')";
                     $result = mysqli_query($mysqli, $sql);
                     if (!$result) {
                         die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));
@@ -87,7 +91,7 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                             echo "<td>" . $row['client_id'] . "</td>";
                             echo "<td>" . $row['mois'] . "</td>";
                             echo "<td>" . $row['consommation_monsuelle'] . "</td>";
-                            echo '<td><img src="../Client/' . $row['photo_path'] . '" width="50" height="50"></img></td>';
+                            echo '<td><button onclick="showImage(\'../Client/' . $row['photo_path'] . '\')" class="btn btn-primary">Voir preuve</button></td>';
                             echo "<td>" . $row['status_f'] . "</td>";
                             echo '<form action="traitement.php" method="get">';
                             echo '<td><a class="btn btn-primary" type="button" name="submitApp" href="traitement.php?id=' . $row['client_id'] . '&mois=' . $row['mois'] . '">Approuver la facture</a></td>';
@@ -122,6 +126,33 @@ A l\'instant il n\' y a pas de consommations à valider .
     <script src="../assets/js/Dynamic-Table-dynamic-table.js"></script>
     <script src="../assets/js/startup-modern.js"></script>
     <script src="../assets/js/Table-With-Search-search-table.js"></script>
+    <script>
+        function showImage(imagePath) {
+            var modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.zIndex = '1';
+            modal.style.left = '0';
+            modal.style.top = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.overflow = 'auto';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.9)';
+            modal.onclick = function() {
+                modal.remove();
+            };
+            var img = document.createElement('img');
+            img.src = imagePath;
+            img.style.margin = 'auto';
+            img.style.display = 'block';
+            img.style.maxWidth = '90%';
+            img.style.maxHeight = '90%';
+            img.onclick = function(event) {
+                event.stopPropagation();
+            };
+            modal.appendChild(img);
+            document.body.appendChild(modal);
+        }
+    </script>   
     <?php
     if (isset($_SESSION['add']) && $_SESSION['add'] == true) {
         echo "<script>

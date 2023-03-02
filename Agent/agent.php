@@ -27,7 +27,6 @@ if (isset($_POST['submit'])) {
                 $fileNameNew = uniqid('', true) . "." . $fileActualExt;
                 $fileDestination = 'uploads/' . $fileNameNew;
                 move_uploaded_file($fileTmpName, $fileDestination);
-                echo "<pre>" . var_dump($fileDestination) . "</pre>";
                 $file = fopen($fileDestination, "r");
 
                 $line_count = 0; // initialize line counter
