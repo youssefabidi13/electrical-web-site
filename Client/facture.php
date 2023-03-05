@@ -78,7 +78,7 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                                     // Récupérer l'année actuelle
                                     $currentYear = date('Y');
                                     // Parcourir les 10 années précédentes à partir de l'année actuelle
-                                    for ($i = $currentYear - 5; $i <= $currentYear; $i++) {
+                                    for ($i = $currentYear - 1; $i <= $currentYear; $i++) {
                                         // Afficher chaque année sous forme d'option dans la liste déroulante
                                         echo '<option value="' . $i . '">' . $i . '</option>';
                                     }

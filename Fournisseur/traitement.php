@@ -145,3 +145,25 @@ if (isset($_POST['send'])) {
         header("Location: showReclamation.php");
     }
 }
+if (isset($_POST['submitUpdate'])) {
+
+    $id = $_POST['id'];
+    $consommation_monsuelle = $_POST['consommation_monsuelle'];
+    $photo_path = $_POST['photo_path'];
+    $client_id = $_POST['client_id'];
+    $mois = $_POST['mois'];
+    $status_f = $_POST['status_f'];
+
+
+
+    
+            $sql = "UPDATE facture SET consommation_monsuelle = $consommation_monsuelle where id='$id';";
+
+            $result = mysqli_query($mysqli, $sql);
+            if ($result) {
+
+                $_SESSION['addd'] = true;
+                header("Location: verifyMonth.php");
+            }
+        
+}

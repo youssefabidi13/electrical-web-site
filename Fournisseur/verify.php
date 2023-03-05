@@ -114,15 +114,15 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                                     $result2 = mysqli_query($mysqli, $sql2);
 
                                     echo "<td>superieur</td>";
-                                }else if ($row['difference'] <= 100 && $row['difference'] >= -100) {
-                                    $difference=0;
+                                } else if ($row['difference'] <= 100 && $row['difference'] >= -100) {
+                                    $difference = 0;
                                     $sql1 = "update consommation_annuelle set status = 'egale'  where id = '$id';";
                                     $sql2 = "update consommation_annuelle set  decalage='$difference' where id = '$id';";
                                     $result1 = mysqli_query($mysqli, $sql1);
                                     $result2 = mysqli_query($mysqli, $sql2);
 
                                     echo "<td>toleré</td>";
-                                } else if ($row['difference'] > 100){
+                                } else if ($row['difference'] > 100) {
                                     $sql1 = "update consommation_annuelle set status = 'inferieur' where id = '$id';";
                                     $sql2 = "update consommation_annuelle set  decalage='$difference' where id = '$id';";
                                     $result1 = mysqli_query($mysqli, $sql1);

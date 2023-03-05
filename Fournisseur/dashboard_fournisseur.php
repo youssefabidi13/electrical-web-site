@@ -154,33 +154,31 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                                         <label for="mois">Consommation par mois: </label><br>
                                         <div id="consommationM" class="h5 mb-0 font-weight-bold text-gray-800">
                                             <?php
-                                            if (isset($_POST['subMois'])) {
+                                            if (isset($_POST['mois'])) {
                                                 $selectedMois = $_POST["mois"];
-                                                $sql2 = "SELECT sum(prix_TTC) as sum FROM facture  where mois='$selectedMois'and client_id in (SELECT c.ID
-                                                FROM client c
-                                                INNER JOIN agent a ON c.agent_id = a.id
-                                                INNER JOIN manager m ON a.fournisseur_id = m.id
-                                                WHERE m.id = $id)";
-                                                $result2 = mysqli_query($mysqli, $sql2);
-                                                $row2 = $result2->fetch_assoc();
-                                                if ($row2['sum'] != null) {
-                                                    echo $row2['sum'] . " KWH <br>";
-                                                } else {
-                                                    echo "<div class='alert alert-primary'>there is no data</div>";
-                                                }
+                                            } else {
+                                                $selectedMois = date('m');
                                             }
-                                            echo '<form method="post" action="dashboard_fournisseur.php">
-                                           <select id="mois" class="shadow form-control" name="mois" placeholder="mois" >';
-                                            for ($i = 1; $i < 13; $i++) {
-                                                echo '<option value="' . $i . '">' . $i . '</option>';
+
+                                            $sql2 = "SELECT sum(consommation_monsuelle) as sum FROM facture WHERE mois='$selectedMois' AND client_id IN (SELECT c.ID FROM client c INNER JOIN agent a ON c.agent_id = a.id INNER JOIN manager m ON a.fournisseur_id = m.id WHERE m.id = $id)";
+                                            $result2 = mysqli_query($mysqli, $sql2);
+                                            $row2 = $result2->fetch_assoc();
+                                            if ($row2['sum'] != null) {
+                                                echo $row2['sum'] . " KWH <br>";
+                                            } else {
+                                                echo "<div class='alert alert-primary'>There is no data</div>";
                                             }
-                                            echo '</select><br>';
-
-                                            echo '<button class=" btn btn-primary" type="submit" name="subMois">Submit</button>
-                                        </form>';
-
-
                                             ?>
+                                            <form method="post" action="dashboard_fournisseur.php" onchange="this.submit()">
+                                                <select id="mois" class="shadow form-control" name="mois" placeholder="Mois">
+                                                    <?php
+                                                    for ($i = 1; $i < 13; $i++) {
+                                                        $selected = ($selectedMois == $i) ? 'selected' : '';
+                                                        echo '<option value="' . $i . '" ' . $selected . '>' . $i . '</option>';
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </form>
                                         </div>
 
 
@@ -204,12 +202,36 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                                     </div>
                                     <div class="row no-gutters align-items-center">
                                         <div class="col-auto">
-                                            <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
-                                        </div>
-                                        <div class="col">
-                                            <div class="progress progress-sm mr-2">
-                                                <div class="progress-bar bg-info" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
+                                            <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800"><?php
+                                            if (isset($_POST['zone'])) {
+                                                $selectedZone = $_POST["zone"];
+                                            } else {
+                                                $selectedZone = 1;
+                                            }
+
+                                            $sql5 = "SELECT SUM(f.consommation_monsuelle) AS sum
+                                            FROM facture f
+                                            JOIN client c ON f.client_id = c.ID
+                                            JOIN agent a ON c.agent_id = a.id
+                                            WHERE a.fournisseur_id ='$id' AND a.zone_number = '$selectedZone'";
+                                            $result5 = mysqli_query($mysqli, $sql5);
+                                            $row5 = $result5->fetch_assoc();
+                                            if ($row5['sum'] != null) {
+                                                echo $row5['sum'] . " KWH <br>";
+                                            } else {
+                                                echo "<div class='alert alert-primary'>There is no data</div>";
+                                            }
+                                            ?>
+                                            <form method="post" action="dashboard_fournisseur.php" onchange="this.submit()">
+                                                <select id="zone" class="shadow form-control" name="zone" placeholder="Zone">
+                                                    <?php
+                                                    for ($i = 1; $i < 20; $i++) {
+                                                        $selected = ($selectedZone == $i) ? 'selected' : '';
+                                                        echo '<option value="' . $i . '" ' . $selected . '>' . $i . '</option>';
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </form></div>
                                         </div>
                                     </div>
                                 </div>
@@ -228,23 +250,19 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
                                     <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Reclamations 
+                                        Reclamations
                                         <i class="fa fa-comments fa-2x text-gray-300"></i>
                                     </div>
                                     <div class="h1 mb-0 font-weight-bold text-gray-800">
                                         <?php
-                                        $sql4 = "SELECT count(*) as count FROM reclamation r where status = false and r.client_id in (SELECT c.ID
-                                                                                        FROM client c
-                                                                                        INNER JOIN agent a ON c.agent_id = a.id
-                                                                                        INNER JOIN manager m ON a.fournisseur_id = m.id
-                                                                                        WHERE m.id = '$id')";
+                                        $sql4 = "SELECT count(*) as count FROM reclamation r where contenue_reponse is null and fournisseur_id ='$id'";
                                         $result4 = mysqli_query($mysqli, $sql4);
                                         $row4 = $result4->fetch_assoc();
                                         echo $row4['count'];
                                         ?></div>
                                 </div>
                             </div>
-                            
+
                         </div>
                     </div>
                 </div>

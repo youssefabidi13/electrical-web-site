@@ -79,7 +79,9 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                                 <th id='trs-hd-3' class='col-lg-4' style='color:black'>Consommation total</th>
                                 <th id='trs-hd-3' class='col-lg-4' style='color:black'>Preuve</th>
                                 <th id='trs-hd-6' class='col-lg-3' style='color:black'>Status</th>
-                                <th id='trs-hd-7' class='col-lg-5' style='color:black'>Action</th>
+                                <th id='trs-hd-7' class='col-lg-5' style='color:black'>Approuver</th>
+                                <th id='trs-hd-7' class='col-lg-5' style='color:black'>Modifier</th>
+
     
                                 </tr>
                             </thead>";
@@ -96,6 +98,7 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                             echo '<form action="traitement.php" method="get">';
                             echo '<td><a class="btn btn-primary" type="button" name="submitApp" href="traitement.php?id=' . $row['client_id'] . '&mois=' . $row['mois'] . '">Approuver la facture</a></td>';
                             echo '</form>';
+                            echo '<td><a class="btn btn-primary" type="button"  href="modifierConsomation.php?id=' . $row['id'] . '&mois=' . $row['mois'] . '">Modifier facture</a></td>';
                             echo "</tr>";
                             echo '<br>';
                         }
@@ -165,6 +168,20 @@ A l\'instant il n\' y a pas de consommations à valider .
               })
             </script>";
         $_SESSION['add'] = false;
+    }
+    ?>
+    <?php
+    if (isset($_SESSION['addd']) && $_SESSION['addd'] == true) {
+        echo "<script>
+        Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'La consommation a été modifié avec succès',
+                showConfirmButton: false,
+                timer: 1500
+              })
+            </script>";
+        $_SESSION['addd'] = false;
     }
     ?>
 

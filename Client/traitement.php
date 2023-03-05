@@ -92,9 +92,10 @@ if (isset($_GET['idFacture'])) {
             $pdf->SetTextColor(255,0,0);
             $pdf->Cell(60, 10, 'Vous devez payee votre facture aussi vite que possible ');
         }
+        $facturePDF ="facture".$id.".pdf";
 
         // Génération du PDF
-        $pdf->Output('F', 'facture.pdf');
+        $pdf->Output('F', $facturePDF);
         header("Location: facture.php");
     }
 }
@@ -151,7 +152,7 @@ if (isset($_POST['submitAdd'])) {
     $annee = $_POST['annee'];
     $consommation = $_POST['consommation'];
 
-    $sql = "SELECT * FROM facture WHERE mois='$mois'";
+    $sql = "SELECT * FROM facture WHERE mois='$mois' and annee='$annee' and client_id='$id'";
     $result = mysqli_query($mysqli, $sql);
     if (!$result->num_rows > 0) {
 
