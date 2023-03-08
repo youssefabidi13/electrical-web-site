@@ -9,6 +9,7 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
     header("location: ../login.php");
     exit;
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -1,0 +1,5 @@
+Annee 	idClient 	Consommation
+2022	  1	        1800
+2022      3         3500
+2022      4         2000
+2022      5         2500

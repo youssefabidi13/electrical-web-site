@@ -12,24 +12,29 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $id = $_GET['id'];
     $mois = $_GET['mois'];
+    $annee = $_GET['annee'];
 
-    $sql = "SELECT * FROM facture WHERE mois='$mois' and client_id ='$id'";
+    $sql = "SELECT * FROM facture WHERE mois='$mois' and client_id ='$id' and annee='$annee';";
     $result = mysqli_query($mysqli, $sql);
     $row = mysqli_fetch_assoc($result);
     $mois_pre = $mois - 1;
 
     $consommation = $row['consommation_monsuelle'];
-    echo $consommation;
+    // echo "<pre>".var_dump($consommation)."</pre>";
 
     if ($mois != 01) {
-        $sql = "SELECT * FROM facture WHERE mois='$mois_pre' and client_id ='$id';";
+        $sql = "SELECT * FROM facture WHERE mois='$mois_pre' and client_id ='$id' and annee='$annee';";
         $result = mysqli_query($mysqli, $sql);
         $user = mysqli_fetch_assoc($result);
         $consommation_f = $consommation - $user['consommation_monsuelle'];
-        if ($consommation < 50) {
+        echo "<pre>".var_dump($consommation_f)."</pre>";
+
+        if ($consommation_f < 50) {
             $HT = $consommation_f * 0.91;
+            // var_dump($HT);
+            // die();
             $TTC = $HT + $HT * 0.14;
-            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
+            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id' and annee='$annee';;";
 
             $result = mysqli_query($mysqli, $sql);
             if ($result) {
@@ -37,10 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 $_SESSION['add'] = true;
                 header("Location: verifyMonth.php");
             }
-        } else if ($consommation > 400) {
+        } else if ($consommation_f > 400) {
             $HT = $consommation_f * 1.12;
             $TTC = $HT + $HT * 0.14;
-            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
+            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id' and annee='$annee';";
 
             $result = mysqli_query($mysqli, $sql);
             if ($result) {
@@ -54,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
             $TTC = $HT + $HT * 0.14;
 
-            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
+            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id' and annee='$annee';";
 
             $result = mysqli_query($mysqli, $sql);
 
@@ -67,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         } else if ($consommation > 400) {
             $HT = $consommation * 1.12;
             $TTC = $HT + $HT * 0.14;
-            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id';";
+            $sql = "UPDATE facture SET prix_HT='$HT', prix_TTC='$TTC' WHERE mois='$mois' AND client_id='$id'and annee='$annee';";
 
             $result = mysqli_query($mysqli, $sql);
             if ($result) {
@@ -166,4 +171,27 @@ if (isset($_POST['submitUpdate'])) {
                 header("Location: verifyMonth.php");
             }
         
+}
+if (isset($_POST['submitRec'])) {
+    $subject = mysqli_real_escape_string($mysqli, $_POST['subject']);
+    $other_subject = mysqli_real_escape_string($mysqli, $_POST['otherSubject']);
+    $message = mysqli_real_escape_string($mysqli, $_POST['message']);
+    $id = mysqli_real_escape_string($mysqli, $_SESSION["id"]);
+    $idC = mysqli_real_escape_string($mysqli, $_POST['idC']);
+
+    // Use prepared statements to prevent SQL injection attacks
+    $stmt = $mysqli->prepare("INSERT INTO reclamation (client_id, contenue, fournisseur_id, status, contenue_reponse, type_rec, autre_type) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $contenue = "Avertissement";
+    $status = true;
+    $fournisseur_id = $id;
+    $stmt->bind_param("isissss", $idC, $contenue, $fournisseur_id, $status, $message, $subject, $other_subject);
+    $result = $stmt->execute();
+
+    if ($result) {
+        $_SESSION['addA'] = true;
+        header("Location: dashboard_fournisseur.php");
+    } else {
+        $_SESSION['notAddA'] = true;
+        header("Location: dashboard_fournisseur.php");
+    }
 }

@@ -8,6 +8,9 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
     header("location: ../login.php");
     exit;
 }
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,6 +19,14 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+    </script>
+
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
     <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
@@ -34,10 +45,13 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
     <link rel="stylesheet" href="../assets/css/Login-Form-Basic-icons.css">
     <link rel="stylesheet" href="../assets/css/Table-With-Search-search-table.css">
     <link rel="stylesheet" href="../assets/css/Table-With-Search.css">
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
 </head>
 </head>
 
 <body>
+
     <?php $id = $_SESSION['id']; ?>
 
     <div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="exampleModalLabel" data-bs-backdrop="static" aria-hidden="true">
@@ -151,7 +165,7 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
                                     <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                        <label for="mois">Consommation par mois: </label><br>
+                                        <label for="mois">Consommation cummulée par mois: </label><br>
                                         <div id="consommationM" class="h5 mb-0 font-weight-bold text-gray-800">
                                             <?php
                                             if (isset($_POST['mois'])) {
@@ -203,35 +217,42 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                                     <div class="row no-gutters align-items-center">
                                         <div class="col-auto">
                                             <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800"><?php
-                                            if (isset($_POST['zone'])) {
-                                                $selectedZone = $_POST["zone"];
-                                            } else {
-                                                $selectedZone = 1;
-                                            }
+                                                                                                        if (isset($_POST['zone'])) {
+                                                                                                            $selectedZone = $_POST["zone"];
+                                                                                                        } else {
+                                                                                                            $selectedZone = 1;
+                                                                                                        }
 
-                                            $sql5 = "SELECT SUM(f.consommation_monsuelle) AS sum
+                                                                                                        $sql5 = "SELECT SUM(f.consommation_monsuelle) AS sum
                                             FROM facture f
                                             JOIN client c ON f.client_id = c.ID
                                             JOIN agent a ON c.agent_id = a.id
                                             WHERE a.fournisseur_id ='$id' AND a.zone_number = '$selectedZone'";
-                                            $result5 = mysqli_query($mysqli, $sql5);
-                                            $row5 = $result5->fetch_assoc();
-                                            if ($row5['sum'] != null) {
-                                                echo $row5['sum'] . " KWH <br>";
-                                            } else {
-                                                echo "<div class='alert alert-primary'>There is no data</div>";
-                                            }
-                                            ?>
-                                            <form method="post" action="dashboard_fournisseur.php" onchange="this.submit()">
-                                                <select id="zone" class="shadow form-control" name="zone" placeholder="Zone">
-                                                    <?php
-                                                    for ($i = 1; $i < 20; $i++) {
-                                                        $selected = ($selectedZone == $i) ? 'selected' : '';
-                                                        echo '<option value="' . $i . '" ' . $selected . '>' . $i . '</option>';
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </form></div>
+                                                                                                        $result5 = mysqli_query($mysqli, $sql5);
+                                                                                                        $row5 = $result5->fetch_assoc();
+                                                                                                        if ($row5['sum'] != null) {
+                                                                                                            echo $row5['sum'] . " KWH <br>";
+                                                                                                        } else {
+                                                                                                            echo "<div class='alert alert-primary'>There is no data</div>";
+                                                                                                        }
+                                                                                                        ?>
+                                                <form method="post" action="dashboard_fournisseur.php" onchange="this.submit()">
+                                                    <select id="zone" class="shadow form-control" name="zone" placeholder="Zone">
+                                                        <?php
+                                                        $query3 = "SELECT a.zone_number as zone
+                                                        FROM manager m
+                                                        INNER JOIN agent a ON m.id = a.fournisseur_id
+                                                        WHERE m.id = '$id'
+                                                        GROUP BY a.zone_number; ";
+                                                        $result8 = mysqli_query($mysqli, $query3);
+                                                        while ($row8 = $result8->fetch_assoc()) {
+                                                            $selected = ($selectedZone == $row8['zone']) ? 'selected' : '';
+                                                            echo '<option value="' . $row8['zone'] . '" ' . $selected . '>' . $row8['zone'] . '</option>';
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -268,6 +289,76 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                 </div>
             </div>
         </div>
+        <?php
+        //chart
+        $idF = $_SESSION['id'];
+
+        $query = "SELECT mois, SUM(consommation_monsuelle) AS total_consommation_cumulee FROM facture f where f.client_id in (SELECT c.ID
+FROM client c
+INNER JOIN agent a ON c.agent_id = a.id
+INNER JOIN manager m ON a.fournisseur_id = m.id
+WHERE m.id = '$idF') GROUP BY mois ORDER BY mois ASC";
+        $result6 = mysqli_query($mysqli, $query);
+        if (!$result6) {
+            die('Error: ' . mysqli_error($mysqli));
+        }
+        $chart_data = '';
+        while ($row6 = mysqli_fetch_array($result6)) {
+            $chart_data .= "{ month:'" . $row6["mois"] . "', consommation_cumulee:" . $row6["total_consommation_cumulee"] . "}, ";
+        }
+
+        $chart_data = substr($chart_data, 0, -2);
+        if ($chart_data != '') {
+            echo ' <div class="container" style="width: 900px">
+            <h2 align="center">Consommation cumulée par mois</h2>
+            <br />
+            <br />
+            <div id="chart"></div>
+        </div>';
+        } else {
+            echo '
+            <div class="container" style="width: 900px">
+            <h2 align="center">Consommation cumulée par mois</h2>
+            <br />
+            <br />
+            <div class="alert alert-danger">There is no data</div>
+        </div>';
+        }
+
+        $query1 = "SELECT SUM(f.consommation_monsuelle) AS sum,a.zone_number 
+        FROM facture f
+        JOIN client c ON f.client_id = c.ID
+        JOIN agent a ON c.agent_id = a.id
+        WHERE a.fournisseur_id ='$id' group by a.zone_number order by a.zone_number asc";
+        $result7 = mysqli_query($mysqli, $query1);
+        if (!$result7) {
+            die('Error: ' . mysqli_error($mysqli));
+        }
+        $chart_data1 = '';
+        while ($row7 = mysqli_fetch_array($result7)) {
+            $chart_data1 .= "{ zone:'" . $row7["zone_number"] . "', consommation_cumulee:" . $row7["sum"] . "}, ";
+        }
+        // var_dump($chart_data1);
+        // die();
+        $chart_data1 = substr($chart_data1, 0, -2);
+        if ($chart_data1 != '') {
+            echo ' <div class="container" style="width: 900px">
+            <h2 align="center">Consommation cumulée par zone</h2>
+            <br />
+            <br />
+            <div id="chartZone"></div>
+            </div>';
+        } else {
+            echo '
+            <div class="container" style="width: 900px">
+            <h2 align="center">Consommation cumulée par zone</h2>
+            <br />
+            <br />
+            <div class="alert alert-danger">There is no data</div>
+        </div>';
+        }
+        ?>
+
         <div class="row mb-5">
             <div class="col-md-8 col-xl-6 text-center mx-auto">
                 <h2 class="fw-bold"><br /><span class="underline pb-2">Les factures non payées</span></h2>
@@ -315,6 +406,7 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
             echo "<tbody>";
             while ($row = $result->fetch_assoc()) {
                 echo "<tr>";
+                echo '<form action="avertissement.php" method="post">';
                 echo "<td>" . $row['id'] . "</td>";
                 echo "<td>" . $row['client_id'] . "</td>";
                 echo "<td>" . $row['annee'] . "</td>";
@@ -323,7 +415,9 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                 echo "<td>" . $row['prix_HT'] . "</td>";
                 echo "<td>" . $row['prix_TTC'] . "</td>";
                 echo "<td>" . $row['status_f'] . "</td>";
-                echo '<td><button class="btn btn-danger" style="margin-left: 5px;" type="submit">Envoyer un avertissement</button></td>';
+                echo '<input type="hidden" value="'. $row['client_id'] .'" name="idC">';
+                echo '<td><input class="btn btn-danger" style="margin-left: 5px;" type="submit" value="Envoyer un avertissement"></input></td>
+                </form>';
                 echo "</tr>";
             }
             echo "</tbody>";
@@ -471,6 +565,51 @@ Tous les factures ont été payée
         $_SESSION['success'] = false;
     }
     ?>
+    <?php
+
+if (isset($_SESSION['addA']) && $_SESSION['addA'] == true) {
+    echo "<script>
+    Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: 'Votre avertissement a été envoyée',
+            showConfirmButton: false,
+            timer: 1500
+          })
+        </script>";
+    $_SESSION['addA'] = false;
+} else if (isset($_SESSION['notAddA']) && $_SESSION['notAddA'] == true) {
+    echo "<script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Votre avertissement n'a pas été envoyée, Veuillez ressayer ulterieurement !',
+          })
+        </script>";
+    $_SESSION['notAddA'] = false;
+}
+?>
+    <script>
+        Morris.Bar({
+            element: 'chart',
+            data: [<?php echo $chart_data; ?>],
+            xkey: 'month',
+            ykeys: ['consommation_cumulee'],
+            labels: ['consommation cumulee'],
+            hideHover: 'auto'
+        });
+    </script>
+    <script>
+        Morris.Bar({
+            element: 'chartZone',
+            data: [<?php echo $chart_data1; ?>],
+            xkey: 'zone',
+            ykeys: ['consommation_cumulee'],
+            labels: ['consommation cumulee'],
+            hideHover: 'auto'
+        });
+    </script>
+    </script>
 </body>
 
 </html>

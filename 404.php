@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Page Not Found - Brand</title>
+    <title>Page Not Found </title>
     <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap">
     <link rel="stylesheet" href="assets/css/Button-Outlines---Pretty.css">
@@ -19,15 +19,11 @@
 
 <body>
     <nav class="navbar navbar-light navbar-expand-md fixed-top navbar-shrink py-3" id="mainNav">
-        <div class="container"><a class="navbar-brand d-flex align-items-center" href="index.php"><span>ELECTRICAL WEB SITE</span></a><button class="navbar-toggler" data-bs-toggle="collapse"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button><div id="navcol-1" class="collapse navbar-collapse" style="padding-left: 0px;">
-    <ul class="navbar-nav mx-auto">
-        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-        <li class="nav-item"></li>
-        <li class="nav-item"><a class="nav-link active" href="loginAgent.html">Agent</a></li>
-        <li class="nav-item"><a class="nav-link" href="loginClient.html">Client</a></li>
-        <li class="nav-item"></li>
-    </ul><button class="btn btn-primary" type="button">logout</button>
-</div></div>
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="index.php"><span>ELECTRICAL WEB SITE</span></a><button class="navbar-toggler" data-bs-toggle="collapse"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div id="navcol-1" class="collapse navbar-collapse" style="padding-left: 0px;">
+
+            </div>
+        </div>
     </nav>
     <section class="py-5 mt-5">
         <div class="container">
@@ -35,7 +31,6 @@
                 <div class="col-md-10 text-center"><img class="img-fluid w-100" src="assets/img/illustrations/404.svg"></div>
                 <div class="col text-center">
                     <h2 class="display-3 fw-bold mb-4">Page Not Found</h2>
-                    <p class="fs-4 text-muted">Fusce adipiscing sit, torquent porta pulvinar.</p>
                 </div>
             </div>
         </div>

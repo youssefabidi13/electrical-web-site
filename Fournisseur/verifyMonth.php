@@ -96,7 +96,7 @@ if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"]
                             echo '<td><button onclick="showImage(\'../Client/' . $row['photo_path'] . '\')" class="btn btn-primary">Voir preuve</button></td>';
                             echo "<td>" . $row['status_f'] . "</td>";
                             echo '<form action="traitement.php" method="get">';
-                            echo '<td><a class="btn btn-primary" type="button" name="submitApp" href="traitement.php?id=' . $row['client_id'] . '&mois=' . $row['mois'] . '">Approuver la facture</a></td>';
+                            echo '<td><a class="btn btn-primary" type="button" name="submitApp" href="traitement.php?id=' . $row['client_id'] . '&mois=' . $row['mois']. '&annee=' . $row['annee'] . '">Approuver la facture</a></td>';
                             echo '</form>';
                             echo '<td><a class="btn btn-primary" type="button"  href="modifierConsomation.php?id=' . $row['id'] . '&mois=' . $row['mois'] . '">Modifier facture</a></td>';
                             echo "</tr>";

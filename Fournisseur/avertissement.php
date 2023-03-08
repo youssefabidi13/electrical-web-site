@@ -3,9 +3,8 @@ require_once "../config.php";
 // Initialize the session
 session_start();
 
-
 // Check if the user is logged in, if not then redirect him to login page
-if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true) {
+if (!isset($_SESSION["loggedinFournisseur"]) || $_SESSION["loggedinFournisseur"] !== true) {
     header("location: ../login.php");
     exit;
 }
@@ -16,7 +15,7 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Response</title>
+    <title>Reclamations</title>
     <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.4.24/sweetalert2.all.js"></script>
@@ -39,83 +38,63 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
 <body><!-- Start: Navbar Centered Links -->
     <nav id="mainNav" class="navbar navbar-light navbar-expand-md fixed-top navbar-shrink py-3">
         <div class="container">
-
             <a class="navbar-brand d-flex align-items-center" href="../index.php">
-                <span>ELECTRICAL WEB SITE</span>
-            </a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+                <span>ELECTRICAL WEB SITE</span></a>
+            <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-1">
+                <span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span>
+            </button>
             <div id="navcol-1" class="collapse navbar-collapse" style="padding-left: 0px;">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="dashboard_fournisseur.php">Dashboard</a></li>
                     <li class="nav-item"></li>
-                    <li class="nav-item"><a class="nav-link" href="facture.php">Mes factures</a></li>
+                    <li class="nav-item"><a class="nav-link" href="verify.php">Annuelles</a></li>
                     <li class="nav-item"></li>
-                    <li class="nav-item"><a class="nav-link" href="reclamation.php">Ajouter une reclamation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="verifyMonth.php">Mensuelles</a></li>
                     <li class="nav-item"></li>
-                    <li class="nav-item"><a class="nav-link active" href="response.php">Reponses</a></li>
-                    <li class="nav-item"></li>
+                    <li class="nav-item"><a class="nav-link" href="showReclamation.php">Reclamation</a></li>
                 </ul><a class="btn btn-primary" href="../logout.php">logout</a>
             </div>
         </div>
-    </nav><!-- End: Navbar Centered Links --><!-- Start: Contact Details -->
+    </nav>
     <section class="py-5 mt-5">
         <div class="container py-5">
             <div class="row">
-                <div class="col-md-8 col-xl-6 text-center mx-auto"><span class="fw-bold" style="font-size: xx-large;"><u>Welcome <?php echo $_SESSION["nom"] . ' ' . $_SESSION["prenom"]; ?></u></span>
-                    <h2 class="display-6 fw-bold mb-4"><span class="underline pb-2">Reponses</span></h2>
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2 class="display-6 fw-bold mb-4"><span class="underline pb-2">Envoyer avertissement</span></h2>
                 </div>
             </div>
-            <div class="col-md-12 search-table-col">
+            <div class="row d-flex justify-content-center">
+                <div class="col-md-6">
+                    <div>
+                        <form class="p-3 p-xl-4" method="post" action="traitement.php">
+                            <?php
+                                $idC = $_POST['idC'];
+                                echo '<input type="hidden" value="'. $idC .'" name="idC">';
+                                ?>
+                            <div class="mb-3">
+                                <label for="subject">Type subject: </label>
+                                <input type="text" id="subject" class="shadow form-control" name="subject" value="Autre" readonly>
 
-                <div class="table-responsive table table-hover table-bordered results">
-                    <?php
-                    $status = true;
-                    // Execute the SQL query
-                    $sql = 'SELECT *
-                    FROM reclamation  where client_id = ' . $_SESSION["id"] . ' and contenue_reponse is not null and status = ' . $status . ' ;';
-                    $result = mysqli_query($mysqli, $sql);
-                    if (!$result) {
-                        die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));
-                    }
-                    if ($result->num_rows > 0) {
+                            </div>
+                            <div id="otherSubjectDiv" style="display:block;">
+                                <label for="otherSubject">Autre subject: </label>
+                                <input type="text" id="otherSubject" class="shadow form-control" name="otherSubject" value="avertissement" readonly>
+                            </div><br>
+                            <label for="message">Message: </label>
+                            <div class="mb-3"><textarea id="message" class="shadow form-control" name="message" rows="6" placeholder="Message"></textarea></div>
+                            <br>
+                            <div><button class="btn btn-primary shadow d-block w-100" type="submit" name="submitRec">Send</button></div>
+                        </form>
 
-                        echo "<table class='table table-hover table-bordered' id='client_data'>";
-                        echo "<thead class='bill-header cs'>
-                                <tr>
-                                <th id='trs-hd-1' class='col-lg-1' style='color:black'>Id reclamation</th>
-                                <th id='trs-hd-2' class='col-lg-2' style='color:black'>Subject</th>
-                                <th id='trs-hd-2' class='col-lg-7' style='color:black'>Message</th>
-                                <th id='trs-hd-2' class='col-lg-2' style='color:black'>Action</th>
 
-                                </tr>
-                            </thead>";
-                        echo "<tbody>";
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>" . $row['id'] . "</td>";
-                            if ($row['autre_type'] == null) {
-                                echo "<td>" . $row['type_rec'] . "</td>";
-                            } else {
-                                echo "<td>" . $row['autre_type'] . "</td>";
-                            }
 
-                            echo "<td>" . $row['contenue_reponse'] . "</td>";
-                            echo '<form action="traitement.php" method="get">';
-                            echo '<td><a class="btn btn-danger" type="button" name="submitApp" href="traitement.php?id=' . $row['id'] . '">Delete reponse</a></td>';
-                            echo '</form>';
-                            echo "</tr>";
-                        }
-
-                        echo "</tbody>";
-                        echo "</table>";
-                    } else {
-                        echo '<div class="alert alert-success" role="alert">
-Vous n\'avez pas une reponse actuellement.
-</div>';
-                    }
-                    ?>
+                    </div>
                 </div>
             </div>
         </div>
+
+
+
     </section><!-- End: Contact Details --><!-- Start: Footer Multi Column -->
     <footer>
         <div class="container py-4 py-lg-5">
@@ -151,47 +130,7 @@ Vous n\'avez pas une reponse actuellement.
     <script src="../assets/js/Dynamic-Table-dynamic-table.js"></script>
     <script src="../assets/js/startup-modern.js"></script>
     <script src="../assets/js/Table-With-Search-search-table.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#client_data').DataTable();
-        });
-    </script>
-    <?php
-
-    if (isset($_SESSION['add']) && $_SESSION['add'] == true) {
-        echo "<script>
-       Swal.fire({
-               position: 'top-end',
-               icon: 'success',
-               title: 'Votre reclamation a été envoyée',
-               showConfirmButton: false,
-               timer: 1500
-             })
-           </script>";
-        $_SESSION['add'] = false;
-    } else if (isset($_SESSION['notAdd']) && $_SESSION['notAdd'] == true) {
-        echo "<script>
-           Swal.fire({
-               icon: 'error',
-               title: 'Oops...',
-               text: 'Votre reclamation n'a pas été envoyée, Veuillez ressayer ulterieurement !',
-             })
-           </script>";
-        $_SESSION['notAdd'] = false;
-    }
-    if (isset($_SESSION['delete']) && $_SESSION['delete'] == true) {
-        echo "<script>
-    Swal.fire({
-            position: 'top-end',
-            icon: 'success',
-            title: 'La reponse a été bien supprimé',
-            showConfirmButton: false,
-            timer: 1500
-          })
-        </script>";
-        $_SESSION['delete'] = false;
-    }
-    ?>
+    
 </body>
 
 </html>
