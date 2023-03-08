@@ -47,11 +47,13 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
                     <li class="nav-item"></li>
-                    <li class="nav-item"><a class="nav-link" href="facture.php">Mes factures</a></li>
+                    <li class="nav-item"><a class="nav-link" href="facture.php">Factures</a></li>
                     <li class="nav-item"></li>
-                    <li class="nav-item"><a class="nav-link" href="reclamation.php">Ajouter une reclamation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="reclamation.php">Reclamation</a></li>
                     <li class="nav-item"></li>
                     <li class="nav-item"><a class="nav-link active" href="response.php">Reponses</a></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"><a class="nav-link" style="color:red" href="avertissement.php">Avertissement</a></li>
                     <li class="nav-item"></li>
                 </ul><a class="btn btn-primary" href="../logout.php">logout</a>
             </div>
@@ -69,9 +71,12 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                 <div class="table-responsive table table-hover table-bordered results">
                     <?php
                     $status = true;
+                    $av = "Avertissement";
+
                     // Execute the SQL query
                     $sql = 'SELECT *
-                    FROM reclamation  where client_id = ' . $_SESSION["id"] . ' and contenue_reponse is not null and status = ' . $status . ' ;';
+                    FROM reclamation  where client_id = ' . $_SESSION["id"] . ' and contenue_reponse is not null and status = ' . $status .' and id not in (SELECT id
+                    FROM reclamation  where contenue = "Avertissement");';
                     $result = mysqli_query($mysqli, $sql);
                     if (!$result) {
                         die('Erreur lors de l\'exécution de la requête : ' . mysqli_error($mysqli));

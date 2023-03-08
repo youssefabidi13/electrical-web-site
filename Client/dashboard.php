@@ -46,11 +46,13 @@ if (!isset($_SESSION["loggedinClient"]) || $_SESSION["loggedinClient"] !== true)
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"><a class="nav-link active" href="dashboard.php">Dashboard</a></li>
                     <li class="nav-item"></li>
-                    <li class="nav-item"><a class="nav-link" href="facture.php">Mes factures</a></li>
+                    <li class="nav-item"><a class="nav-link" href="facture.php">Factures</a></li>
                     <li class="nav-item"></li>
-                    <li class="nav-item"><a class="nav-link" href="reclamation.php">Ajouter une reclamation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="reclamation.php">Reclamation</a></li>
                     <li class="nav-item"></li>
                     <li class="nav-item"><a class="nav-link" href="response.php">Reponse</a></li>
+                    <li class="nav-item"></li>
+                    <li class="nav-item"><a class="nav-link" style="color:red" href="avertissement.php">Avertissement</a></li>
                     <li class="nav-item"></li>
                 </ul><a class="btn btn-primary" href="../logout.php">logout</a>
             </div>
